@@ -8,9 +8,9 @@ let users = [];
 socket.emit('getChats', userId);
 
 // Receive users
-/*socket.on('usersObject', function(usersObject) {
+socket.on('usersObject', function(usersObject) {
   users = usersObject;
-})*/
+})
 
 // Receive getChats
 socket.on('getChats', function(userChatsContent) {
@@ -19,16 +19,16 @@ socket.on('getChats', function(userChatsContent) {
 
 // Function loadChatBar
 function loadChatsDiv(chats) {
-  let int = 0
+  console.log(chats)
+  let first = true 
   for (i=0; i<chats.length; i++) {
-    let chat = chats[0]
+    let chat = chats[i]
     
     // create li
     const li = document.createElement('li');
     let liClass
-    if (int == 0) {
+    if (first) {
       liClass = "chat-list-item list-group-item active"
-      int = 1
     } else {
       liClass = "chat-list-item list-group-item"
     }
@@ -46,17 +46,59 @@ function loadChatsDiv(chats) {
 
     li.appendChild(div)
     div.appendChild(img)
-   
-    let div2 = document.createElement('div');
-    let name = "First Last"; 
-    //let name = getUserName(chat.members[0])
-    div2.innerHTML = `<p class="name">${name}</p>
+
+    const p = document.createElement('p');
+    p.classList = "name";
+    let name;
+    console.log(chat.name)
+    if (chat.name === 'Indi') {
+      name = getUserName(chat.members.filter(userId1 => userId1 !== userId)[0])
+    } else {
+      name = chat.name
+    }
+    
+    p.innerText =  `${name}`    
+    const span1 = document.createElement('span');
+    span1.id = 'newMessageIcon'
+    span1.classList = 'material-icons-outlined ml-auto'
+    span1.innerHTML = 'priority_high'
+    const span2 = document.createElement('span');
+    span2.id = 'notOnline'
+    span2.classList = 'material-icons-outlined'   //TODO: add hidden
+    span2.innerHTML = 'circle'
+    const span3 = document.createElement('span');   
+    span3.id = 'online'
+    span3.classList = 'material-icons-round'
+    span3.innerHTML = 'circle' 
+    const span4 = document.createElement('span');   
+    span4.id = 'notFavourite'
+    span4.classList = 'material-icons-outlined'
+    span4.innerHTML = 'star_outline'
+    const span5 = document.createElement('span');   
+    span5.id = 'favourite'
+    span5.classList = 'material-icons-outlined'
+    span5.innerHTML = 'star'
+
+    div.appendChild(p)
+    div.appendChild(span1)
+    if (first) {
+      div.appendChild(span3)    // online
+      first = false
+    } else {
+      div.appendChild(span2)    // ofline
+    }
+
+    div.appendChild(span4)
+    //div.appendChild(span5)
+
+
+    /*div2.innerHTML = `<p class="name">${name}</p>
     <span id="newMessageIcon" class="material-icons-outlined ml-auto">priority_high</span>
     <span id="notOnline" class="material-icons-outlined" hidden>circle</span>
     <span id="online" class="material-icons-round">circle</span>
     <span id="notFavourite" class="material-icons-outlined" hidden>star_outline</span>
     <span id="favourite" class="material-icons-outlined">star</span>`
-    div.appendChild(div2);
+    div.appendChild(div2);*/
     document.getElementById("chatList").appendChild(li);
   }
 }
@@ -76,14 +118,13 @@ function loadChatsDiv(chats) {
 */
 
 // Function getUserName()
+let runOnce = true;
 function getUserName(userId) {
-  console.log(userId)
-  for (i=0; i<users.length; i++) {
-    let user = users[i];
-    console.log("-----------------")
-    console.log(user)
+  for (j=0; j<users.length; j++) {
+    let user = users[j];
     if (user.id === userId) {
-      return user.firstName + " " + user.lastName
+      let myName =  user.firstName + " " + user.lastName
+      return myName
     }
   }
 }
