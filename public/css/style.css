@@ -19,6 +19,14 @@ body {
     height: 80%;
 }
 
+.vh-90 {
+    height: 90vh;
+}
+
+.vw-25 {
+    width: 25vw;
+}
+
 img {
     object-fit: cover;
     height:40px;
