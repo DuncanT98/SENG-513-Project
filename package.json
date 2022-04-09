@@ -1,0 +1,27 @@
+{
+  "name": "seng-513-project",
+  "version": "1.0.0",
+  "description": "Instant messaging web application.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DuncanT98/SENG-513-Project.git"
+  },
+  "author": "Group 12",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DuncanT98/SENG-513-Project/issues"
+  },
+  "homepage": "https://github.com/DuncanT98/SENG-513-Project#readme",
+  "dependencies": {
+    "express": "^4.17.3",
+    "moment": "^2.29.2",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
