@@ -128,3 +128,32 @@ function getUserName(userId) {
     }
   }
 }
+
+
+// Navigation between elements logic
+$("#goToGroupSettingsButton").on("click", function (event) {
+  event.preventDefault();
+  $("#userSettingsSidebar").addClass("d-none");
+  $("#groupSettingsSidebar").removeClass("d-none");
+  $("#userChatListSidebar").addClass("d-none");
+});
+  
+$("#goToSettingsButton").on("click", function (event) {
+  event.preventDefault();
+  $("#userSettingsSidebar").removeClass("d-none");
+  $("#groupSettingsSidebar").addClass("d-none");
+  $("#userChatListSidebar").addClass("d-none");
+});
+  
+$(".back-arrow").on("click", function (event) {
+  event.preventDefault();
+  console.log("WHAAATTT");
+  $("#userSettingsSidebar").addClass("d-none");
+  $("#groupSettingsSidebar").addClass("d-none");
+  $("#userChatListSidebar").removeClass("d-none");
+});
+  
+$("#goToSignOutButton").on("click", function (event) {
+  event.preventDefault();
+  console.log("DOOOOO SOMETHING HERE")
+});
