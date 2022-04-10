@@ -1,8 +1,20 @@
+// DOM
+const inputSearchChats = document.getElementById('searchChats');
+const ulChatList = document.getElementById('chatList');
+const inputMsgInput = document.getElementById('msgInput');
+const btnSendMsg = document.getElementById('sendMsg');
+
+// socket.io
 const socket = io();
 
 // Get user id
 const userId = localStorage.getItem('userId');
+
+// Declare variables
 let users = [];
+let chats = [];
+let currentChat;
+let firstSignIn = true; 
 
 // Emit getChats
 socket.emit('getChats', userId);
@@ -14,20 +26,65 @@ socket.on('usersObject', function(usersObject) {
 
 // Receive getChats
 socket.on('getChats', function(userChatsContent) {
-  loadChatsDiv(userChatsContent);
+  console.log("----------------------22 getChats")
+  console.log(userChatsContent)
+  chats = userChatsContent;         // set chats
+  if (firstSignIn) {
+    currentChat = userChatsContent[0].id;
+    firstSignIn = false;
+  }
+  loadChatsDiv();   // display chats
 })
 
+// Receive getChat
+socket.on('getChat', function(userChatsContent) {
+  console.log("----------------------39 getChat")
+  console.log(userChatsContent)
+  chats = userChatsContent;         // set chats
+  
+  // set selected chat div
+  let messages;
+  for(i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === currentChat) {
+      messages = chat.messages
+    }
+  }
+  console.log("----------------------51 messages")
+  console.log(messages);
+});
+
+// Add new individual chat
+$("#searchChats").on("click", function (event) {
+  event.preventDefault();
+
+  // get search TODO:
+  let addUserId = inputSearchChats.value;
+  if (addUserId  != "") {
+    let newChatInfo = {
+      fromUser : userId,
+      toUser : addUserId
+    }
+    socket.emit('newIndiChat', newChatInfo);
+    //loadChatsDiv(chats)
+  }
+});
+
 // Function loadChatBar
-function loadChatsDiv(chats) {
-  console.log(chats)
-  let first = true 
+function loadChatsDiv() {
+  ulChatList.innerHTML = ''        // clear chat list
+
+  // Display chats 
+  //let first = true 
   for (i=0; i<chats.length; i++) {
     let chat = chats[i]
     
     // create li
     const li = document.createElement('li');
-    let liClass
-    if (first) {
+    li.id = chat.id; 
+    li.onclick = function(e) {chatSelected(e);};
+    let liClass;
+    if (li.id === currentChat) {
       liClass = "chat-list-item list-group-item active"
     } else {
       liClass = "chat-list-item list-group-item"
@@ -50,72 +107,56 @@ function loadChatsDiv(chats) {
     const p = document.createElement('p');
     p.classList = "name";
     let name;
-    console.log(chat.name)
     if (chat.name === 'Indi') {
       name = getUserName(chat.members.filter(userId1 => userId1 !== userId)[0])
     } else {
       name = chat.name
     }
     
+    // name 
     p.innerText =  `${name}`    
     const span1 = document.createElement('span');
+
+    // newMessageIcon icon
     span1.id = 'newMessageIcon'
     span1.classList = 'material-icons-outlined ml-auto'
     span1.innerHTML = 'priority_high'
     const span2 = document.createElement('span');
+    
+    // notOnline icon
     span2.id = 'notOnline'
     span2.classList = 'material-icons-outlined'   //TODO: add hidden
     span2.innerHTML = 'circle'
     const span3 = document.createElement('span');   
+    
+    // online icon
     span3.id = 'online'
     span3.classList = 'material-icons-round'
     span3.innerHTML = 'circle' 
     const span4 = document.createElement('span');   
+    
+    // notFavourite icon
     span4.id = 'notFavourite'
     span4.classList = 'material-icons-outlined'
     span4.innerHTML = 'star_outline'
     const span5 = document.createElement('span');   
+    
+    // favourite icon 
     span5.id = 'favourite'
     span5.classList = 'material-icons-outlined'
     span5.innerHTML = 'star'
 
-    div.appendChild(p)
-    div.appendChild(span1)
-    if (first) {
-      div.appendChild(span3)    // online
-      first = false
-    } else {
-      div.appendChild(span2)    // ofline
-    }
+    div.appendChild(p)          // name
+    div.appendChild(span1)      // newMessageIcon
+    div.appendChild(span2)      // ofline
+    //div.appendChild(span3)    // online
+    div.appendChild(span4)      // notFavourite
+    //div.appendChild(span5)    // favourite
 
-    div.appendChild(span4)
-    //div.appendChild(span5)
-
-
-    /*div2.innerHTML = `<p class="name">${name}</p>
-    <span id="newMessageIcon" class="material-icons-outlined ml-auto">priority_high</span>
-    <span id="notOnline" class="material-icons-outlined" hidden>circle</span>
-    <span id="online" class="material-icons-round">circle</span>
-    <span id="notFavourite" class="material-icons-outlined" hidden>star_outline</span>
-    <span id="favourite" class="material-icons-outlined">star</span>`
-    div.appendChild(div2);*/
-    document.getElementById("chatList").appendChild(li);
+    // add to chat list 
+    ulChatList.appendChild(li);
   }
 }
-
-/*
-<li class="chat-list-item list-group-item active">
-  <div class="chat-list-item-wrapper row">
-    <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle">
-    <p class="name">Frank N. Stein</p>
-    <span id="newMessageIcon" class="material-icons-outlined ml-auto">priority_high</span>
-    <span id="notOnline" class="material-icons-outlined" hidden>circle</span>
-    <span id="online" class="material-icons-round">circle</span>
-    <span id="notFavourite" class="material-icons-outlined" hidden>star_outline</span>
-    <span id="favourite" class="material-icons-outlined">star</span>
-  </div>
-</li>
-*/
 
 // Function getUserName()
 let runOnce = true;
@@ -129,6 +170,25 @@ function getUserName(userId) {
   }
 }
 
+// Select chat logic
+function chatSelected(e) {
+  let id = e.path[1].id
+  currentChat = id;
+  console.log(`selected: ${currentChat}`)
+  loadChatsDiv();
+  //TODO: load chat
+  socket.emit('getChat', {userId, currentChat}); 
+}
+
+// 
+$("#sendMsg").on("click", function (event) {
+  event.preventDefault();
+  if (inputMsgInput.value != '') {
+    console.log(`send: '${inputMsgInput.value}', from ${userId} to ${currentChat}`);
+    inputMsgInput.value = '';
+    inputMsgInput.focus()
+  }
+});
 
 // Navigation between elements logic
 $("#goToGroupSettingsButton").on("click", function (event) {
@@ -155,5 +215,5 @@ $(".back-arrow").on("click", function (event) {
   
 $("#goToSignOutButton").on("click", function (event) {
   event.preventDefault();
-  console.log("DOOOOO SOMETHING HERE")
+  window.location.href = 'index.html';
 });

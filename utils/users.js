@@ -2,32 +2,32 @@
 const users = [];
 
 let  user1 = {
-  id : "u1",
-  firstName : "First1",
-  lastName : "Last1",
-  email : "user1@mail.com",
-  password : "123",
-  chats : ["c1", "c2"],
+  id : 'u1',
+  firstName : 'First1',
+  lastName : 'Last1',
+  email : 'user1@mail.com',
+  password : '123',
+  chats : ['i1', 'g1'],
   favs : []
 }
 
 let user2 = {
-  id : "u2",
-  firstName : "First2",
-  lastName : "Last2",
-  email : "user2@mail.com",
-  password : "123",
-  chats : ["c1", "c2"],
+  id : 'u2',
+  firstName : 'First2',
+  lastName : 'Last2',
+  email : 'user2@mail.com',
+  password : '123',
+  chats : ['i1', 'g1'],
   favs : []
 }
 
 let user3 = {
-  id : "u3",
-  firstName : "First3",
-  lastName : "Last3",
-  email : "user3@mail.com",
-  password : "123",
-  chats : ["c2"],
+  id : 'u3',
+  firstName : 'First3',
+  lastName : 'Last3',
+  email : 'user3@mail.com',
+  password : '123',
+  chats : ['i1', 'g1'],
   favs : []
 }
 
@@ -38,6 +38,16 @@ users.push(user3);
 // Function addUser
 function addUser(user) {
   users.push(user);
+}
+
+// Function addChatToUser
+function addChatToUser(userId, chatId) {
+  for (i = 0; i < users.length; i++) {
+    user = users[i]
+    if (user.id === userId) {
+      user.chats.push(chatId)
+    }
+  }
 }
 
 // Function getUsers
@@ -74,6 +84,7 @@ function getUserChatIds(userId) {
 // export 
 module.exports = {
   addUser,
+  addChatToUser,
   getUsers,
   getUserIds,
   getUserIndexByEmail,
