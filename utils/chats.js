@@ -1,8 +1,8 @@
 const chats = [];
 
-// Set chat 
+// Set chats 
 let chat1 = {
-  id : "c1",
+  id : "i1",
   name : "Indi",
   members : ["u1", "u2"],
   messages : [
@@ -25,8 +25,32 @@ let chat1 = {
   ]
 };
 
+let chat2 = {
+  id : "i2",
+  name : "Indi",
+  members : ["u1", "u3"],
+  messages : [
+    {
+      senderId : "u1",
+      content : "hey"
+    },
+    {
+      senderId: "u3",
+      content : "hello"
+    },
+    {
+      senderId: "u1",
+      content : "how are you?"
+    },
+    {
+      senderId: "u3",
+      content : "good." 
+    }
+  ]
+};
+
 let group1 = {
-  id : "c2",
+  id : "g1",
   name : "Group 1",
   members : ["u1", "u2", "u3"],
   messages : [
@@ -38,12 +62,59 @@ let group1 = {
 }
 
 chats.push(chat1);
+chats.push(chat2)
 chats.push(group1);
+
+// Function getNewChatId
+function getNewChatId(type) {
+  let maxChat = 0
+  for (i = 0; i < chats.length; i++) {
+    let chat = chats[i]
+    if(type === 'Indi' && chat.name === "Indi") {
+      let id = parseInt(chat.id.substring(1));
+      if (id > maxChat) {
+        maxChat = id
+      }
+    } else if (type === 'Group' && chat.name === 'Group') {
+      let id = parseInt(chat.id.substring(1));
+      if (id > maxChat) {
+        maxChat = id
+      }
+    }
+  }
+
+  if (type === 'Indi') {
+    return "i" + (maxChat+1)
+  } else if (type === 'Group') {
+    return "g" + (maxChat+1)
+  } else {
+    return "ERROR"
+  }
+}
+
+// Function addChat 
+function addChat(newChat) {
+  chats.push(newChat);
+}
+
+// Function addMsg
+function addMsg(obj) {
+  let chatId = obj.currentChat;
+  let msg = obj.msg;
+  for(i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === chatId) {
+      chat.messages.push(msg);
+      return;     // end for loop 
+    }
+  }
+}
 
 // Function getChat
 function getChat(chatId) {
-  for (index = 0; index < chats.length; index++) {
-    let chat = chats[index];
+  for (i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    //console.log('---------------------116 check')
     if (chat.id === chatId) {
       return chat;
     }
@@ -65,8 +136,16 @@ function getChatsContent(chatIds) {
   return userChats;
 }
 
+function getChats() {
+  return chats;
+}
+
 // export 
 module.exports = {
+  getNewChatId,
+  addChat,
+  addMsg, 
   getChat,
-  getChatsContent
+  getChatsContent,
+  getChats
 }

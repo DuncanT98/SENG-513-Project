@@ -43,6 +43,10 @@ sectionSignIn.addEventListener('submit', function(e) {
   if (!valid) {
     alert("Invalid Email or Password.")
     e.target.elements.password.value = '';
-    e.target.elements.username.focus();
+    try {
+      e.target.elements.username.focus();
+    } catch {
+      //TODO:
+    }
   }
 })
