@@ -194,8 +194,8 @@ function chatSelected(e) {
 
 // Receive getChat
 socket.on('getChat', function(userChatsContent) {
-  console.log(`getChat:`)   
-  console.log(userChatsContent)
+  //console.log(`getChat:`)   
+  //console.log(userChatsContent)
   chats = userChatsContent;         // set chats
   
   // set selected chat div
@@ -206,14 +206,26 @@ socket.on('getChat', function(userChatsContent) {
       messages = chat.messages
     }
   }
-  console.log('messages')
-  console.log(messages);
 });
 
 // Function 'loadChatLog'
 function loadChatLog() {
   divRight.style.visibility = 'visible'
   pChatName.innerHTML = `${currentChat}`
+
+  let messagesToDisplay = []
+
+  for(i=0; i<chats.length; i++) {
+    let chat = chats[i]
+    if (chat.id === currentChat) {
+      messagesToDisplay = chat.messages;
+    }
+  }
+
+  //TODO: display messages in'messagesToDisplay'
+  console.log('messages to display: ')
+  console.log(messagesToDisplay);
+
 }
 
 // Send message 
@@ -236,8 +248,9 @@ $("#sendMsg").on("click", function (event) {
 
 // Receive 'newMessage'
 socket.on('newMessage', function(chat) {
-  console.log('------------------------received:')
-  console.log(chat);
+  //console.log('------------------------received:')
+  //console.log(chat);
+  loadChatLog();
 })
 
 // Navigation between elements logic
