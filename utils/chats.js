@@ -97,10 +97,24 @@ function addChat(newChat) {
   chats.push(newChat);
 }
 
+// Function addMsg
+function addMsg(obj) {
+  let chatId = obj.currentChat;
+  let msg = obj.msg;
+  for(i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === chatId) {
+      chat.messages.push(msg);
+      return;     // end for loop 
+    }
+  }
+}
+
 // Function getChat
 function getChat(chatId) {
-  for (index = 0; index < chats.length; index++) {
-    let chat = chats[index];
+  for (i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    //console.log('---------------------116 check')
     if (chat.id === chatId) {
       return chat;
     }
@@ -122,10 +136,16 @@ function getChatsContent(chatIds) {
   return userChats;
 }
 
+function getChats() {
+  return chats;
+}
+
 // export 
 module.exports = {
   getNewChatId,
   addChat,
+  addMsg, 
   getChat,
-  getChatsContent
+  getChatsContent,
+  getChats
 }

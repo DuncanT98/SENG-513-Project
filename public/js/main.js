@@ -1,58 +1,68 @@
 // DOM
+const divRight = document.getElementById('rightSideBar')
+const pUserNameH = document.querySelector('.userNameHome');
+const pUserNameS = document.querySelector('.userNameSettings');
+const pChatName = document.querySelector('.chatName');
 const inputSearchChats = document.getElementById('searchChats');
 const ulChatList = document.getElementById('chatList');
 const inputMsgInput = document.getElementById('msgInput');
 const btnSendMsg = document.getElementById('sendMsg');
 
-// socket.io
-const socket = io();
+// 
+$(document).ready(function() {
+  divRight.style.visibility = 'hidden'
+});
 
-// Get user id
-const userId = localStorage.getItem('userId');
+// Set current user info
+const socket = io();                                  
+const userId = localStorage.getItem('userId');      // Get user id
+let user = ''
+socket.emit('getUserInfo', userId);
+socket.on('getUserInfo', function(userInfo) {
+  user = userInfo;
+  console.log("user info: ")
+  console.log(user);
+
+  // set user name
+  pUserNameH.innerHTML = user.firstName + ' ' + user.lastName
+  pUserNameS.innerHTML = user.firstName + ' ' + user.lastName
+});
 
 // Declare variables
 let users = [];
 let chats = [];
-let currentChat;
-let firstSignIn = true; 
+let currentChat = '';
 
-// Emit getChats
-socket.emit('getChats', userId);
-
-// Receive users
+// Receive 'usersObject', get users
 socket.on('usersObject', function(usersObject) {
   users = usersObject;
 })
 
-// Receive getChats
-socket.on('getChats', function(userChatsContent) {
-  console.log("----------------------22 getChats")
-  console.log(userChatsContent)
-  chats = userChatsContent;         // set chats
-  if (firstSignIn) {
-    currentChat = userChatsContent[0].id;
-    firstSignIn = false;
-  }
-  loadChatsDiv();   // display chats
-})
+// Receive chats
+socket.on('chats', function(allChats) {
+  chats = []
+  for (i=0; i<allChats.length; i++) {
+    let chat = allChats[i];
+    let isMemebr = chat.members.some(function(member) {
+      return member === userId
+    });
 
-// Receive getChat
-socket.on('getChat', function(userChatsContent) {
-  console.log("----------------------39 getChat")
-  console.log(userChatsContent)
-  chats = userChatsContent;         // set chats
-  
-  // set selected chat div
-  let messages;
-  for(i=0; i<chats.length; i++) {
-    let chat = chats[i];
-    if (chat.id === currentChat) {
-      messages = chat.messages
+    if (isMemebr) {
+      chats.push(chat);
     }
   }
-  console.log("----------------------51 messages")
-  console.log(messages);
-});
+})
+
+// Emit 'getChats'
+socket.emit('getChats', userId);
+
+// Receive 'getChats'
+socket.on('getChats', function(userChatsContent) {
+  console.log(`Chats for ${userId}:`)   
+  console.log(userChatsContent)
+  chats = userChatsContent;         // set chats
+  loadChatsDiv();   // display chats
+})
 
 // Add new individual chat
 $("#searchChats").on("click", function (event) {
@@ -147,7 +157,7 @@ function loadChatsDiv() {
     span5.innerHTML = 'star'
 
     div.appendChild(p)          // name
-    div.appendChild(span1)      // newMessageIcon
+    div.appendChild(span1)      // newMessageIcon     //TODO:  
     div.appendChild(span2)      // ofline
     //div.appendChild(span3)    // online
     div.appendChild(span4)      // notFavourite
@@ -170,25 +180,65 @@ function getUserName(userId) {
   }
 }
 
-// Select chat logic
+// Select chat 
 function chatSelected(e) {
   let id = e.path[1].id
-  currentChat = id;
-  console.log(`selected: ${currentChat}`)
-  loadChatsDiv();
-  //TODO: load chat
-  socket.emit('getChat', {userId, currentChat}); 
+  console.log(`------------------------selected: ${id}`)
+  if (stringContainsNumber(id)) {
+    currentChat = id;
+    loadChatsDiv();
+    loadChatLog();
+    socket.emit('getChat', {userId, currentChat}); 
+  }
 }
 
-// 
+// Receive getChat
+socket.on('getChat', function(userChatsContent) {
+  console.log(`getChat:`)   
+  console.log(userChatsContent)
+  chats = userChatsContent;         // set chats
+  
+  // set selected chat div
+  let messages;
+  for(i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === currentChat) {
+      messages = chat.messages
+    }
+  }
+  console.log('messages')
+  console.log(messages);
+});
+
+// Function 'loadChatLog'
+function loadChatLog() {
+  divRight.style.visibility = 'visible'
+  pChatName.innerHTML = `${currentChat}`
+}
+
+// Send message 
 $("#sendMsg").on("click", function (event) {
   event.preventDefault();
-  if (inputMsgInput.value != '') {
-    console.log(`send: '${inputMsgInput.value}', from ${userId} to ${currentChat}`);
+  let msgContent = inputMsgInput.value;
+  if (msgContent != '') {
+    console.log(`------------------------sent: '${msgContent}', from ${userId} to ${currentChat}`);
     inputMsgInput.value = '';
     inputMsgInput.focus()
+
+    // emit message   //TODO: add time
+    let msg = {
+      senderId: userId,
+      content : msgContent
+    }
+    socket.emit('sendMessage', {currentChat, msg});
   }
 });
+
+// Receive 'newMessage'
+socket.on('newMessage', function(chat) {
+  console.log('------------------------received:')
+  console.log(chat);
+})
 
 // Navigation between elements logic
 $("#goToGroupSettingsButton").on("click", function (event) {
@@ -217,3 +267,8 @@ $("#goToSignOutButton").on("click", function (event) {
   event.preventDefault();
   window.location.href = 'index.html';
 });
+
+// Function 'stringContainsNumber'
+function stringContainsNumber(string) {
+  return /\d/.test(string);    // regex
+}

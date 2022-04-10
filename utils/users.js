@@ -70,13 +70,22 @@ function getUserIndexByEmail(email) {
   return(users.findIndex(user => user.email === email))
 }
 
-
 // Function getUserChats
 function getUserChatIds(userId) {
   for (index = 0; index < users.length; index++) {
     let user = users[index];
     if (user.id === userId) {
       return user.chats;
+    }
+  }
+}
+
+// Function getUserInfo
+function getUserInfo(userId) {
+  for(i=0; i<users.length; i++) {
+    let user = users[i];
+    if (user.id === userId) {
+      return user;
     }
   }
 }
@@ -88,5 +97,6 @@ module.exports = {
   getUsers,
   getUserIds,
   getUserIndexByEmail,
-  getUserChatIds
+  getUserChatIds,
+  getUserInfo
 }

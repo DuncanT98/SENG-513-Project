@@ -3,8 +3,9 @@ const http = require('http');
 const express = require('express');   // npm run dev
 const socketio = require('socket.io');
 const { addUser, addChatToUser, getUsers, getUserIds, 
-  getUserIndexByEmail, getUserChatIds } = require('./utils/users.js');
-const { getNewChatId, addChat, getChat, getChatsContent } = require('./utils/chats.js');
+  getUserIndexByEmail, getUserChatIds, getUserInfo } = require('./utils/users.js');
+const { getNewChatId, addChat, getChat, addMsg,
+  getChatsContent, getChats } = require('./utils/chats.js');
 
 // Server
 const app = express();
@@ -17,20 +18,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Run when client connects
 io.on('connection', socket => {
   
-  // Send users
+  // Emit 'usersObject', send users
   const users = getUsers();
   socket.emit('usersObject', users)
   
-  // Send user Ids
+  // Emit 'userIdsObject', send user Ids
   const userIds = getUserIds();
   socket.emit('userIdsObject', userIds)
 
-  // newSignUp
+  // Receive 'newSignUp'
   socket.on('newSignUp', function(user) {
     addUser(user);
   }) 
 
-  // newChat
+  // Receive 'getUserInfo'
+  socket.on('getUserInfo', function(userId) {
+    socket.emit('getUserInfo', getUserInfo(userId));
+  })
+
+  // Receive 'newIndiChat'
   socket.on('newIndiChat', function(newChatInfo) {
     // create chat id
     let newIndiChatId = getNewChatId('Indi');
@@ -54,24 +60,34 @@ io.on('connection', socket => {
     socket.emit('getChats', userChatsContent);
   }) 
 
-  // loadChat
+  // Receive 'loadChat'
   socket.on('loadChat', function({userId, chatId}) {
     let chat = getChat(chatId);
     socket.emit('chatObject', chat);
   })
 
-  // getChat
+  // Receive 'getChat'
   socket.on('getChat', function({userId, chatId}) {
     let userChatIds = getUserChatIds(userId);
     let userChatsContent = getChatsContent(userChatIds);
     socket.emit('getChat', userChatsContent);
   })
 
-  // getChats
+  // Receive 'getChats'
   socket.on('getChats', function(userId) {
     let userChatIds = getUserChatIds(userId);
     let userChatsContent = getChatsContent(userChatIds);
     socket.emit('getChats', userChatsContent);
+  })
+
+  // Receive 'sendMessage'
+  socket.on('sendMessage', function (obj) {
+    addMsg(obj);                            // update chats
+    let chatId = obj.currentChat;           
+    let chatContent = getChat(chatId);      // get updated chat
+    let chats = getChats();
+    io.emit('newMessage', chatContent);     // emit updated chat 
+    io.emit('chats', chats);
   })
 
 })
