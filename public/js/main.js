@@ -222,7 +222,7 @@ function loadChatLog() {
     }
   }
 
-  //TODO: display messages in'messagesToDisplay'
+  //TODO: display messages in 'messagesToDisplay'
   console.log('messages to display: ')
   console.log(messagesToDisplay);
 

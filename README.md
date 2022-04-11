@@ -1,3 +1,4 @@
 # SENG-513-Project
 
-- Use "npm run dev" to run server
+- Run 'npm install' to install all dependencies
+- Run "npm run dev" to run server
