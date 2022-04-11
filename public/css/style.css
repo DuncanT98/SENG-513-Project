@@ -19,12 +19,10 @@ body {
     height: 80%;
 }
 
-.vh-90 {
+.chat-info-menu {
+    width: 75vw;
     height: 90vh;
-}
 
-.vw-25 {
-    width: 25vw;
 }
 
 img {
@@ -43,4 +41,16 @@ img {
 
 .back-arrow {
     font-size: 48px; 
+}
+
+.bk-l-green {
+    background-color: #e2f0d9;
+}
+
+@media (min-width: 600px) {
+    .chat-info-menu {
+        width: 25vw;
+        height: 90vh;
+    
+    }
 }
