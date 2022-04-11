@@ -258,7 +258,6 @@ function loadChatLog() {
         $("#leftSideBar").addClass("d-none");
         break;
       }
-    
     }
 }
 
