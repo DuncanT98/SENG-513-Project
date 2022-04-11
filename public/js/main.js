@@ -8,9 +8,9 @@ const ulChatList = document.getElementById('chatList');
 const inputMsgInput = document.getElementById('msgInput');
 const btnSendMsg = document.getElementById('sendMsg');
 
-// 
+
 $(document).ready(function() {
-  divRight.style.visibility = 'hidden'
+  //divRight.style.visibility = 'hidden'
 });
 
 // Set current user info
@@ -92,12 +92,11 @@ function loadChatsDiv() {
     // create li
     const li = document.createElement('li');
     li.id = chat.id; 
-    li.onclick = function(e) {chatSelected(e);};
     let liClass;
     if (li.id === currentChat) {
-      liClass = "chat-list-item list-group-item active"
+      liClass = "chat-list-item list-group-item list-group-item-action active"
     } else {
-      liClass = "chat-list-item list-group-item"
+      liClass = "chat-list-item list-group-item list-group-item-action";
     }
     li.classList = liClass
 
@@ -166,6 +165,9 @@ function loadChatsDiv() {
     // add to chat list 
     ulChatList.appendChild(li);
   }
+  // Clicking a chat history calls the chatSelected method
+  $("#chatList .list-group-item").click(chatSelected);
+
 }
 
 // Function getUserName()
@@ -180,57 +182,90 @@ function getUserName(userId) {
   }
 }
 
-// Select chat 
+/**
+ * When a chat is selected, get the id from the element and
+ * request the chat messages from the server
+ * @param {event} e 
+ */ 
 function chatSelected(e) {
-  let id = e.path[1].id
-  console.log(`------------------------selected: ${id}`)
+  console.log(e);
+  $("#chatHistorySide").removeClass("d-none");
+  // Switch active class to currently clicked element
+  $('#chatList .active').removeClass('active');
+  $(this).toggleClass("active");
+  let id = $(this).attr("id");
+  console.log(`------------------------selected: ${id}`);
   if (stringContainsNumber(id)) {
     currentChat = id;
     loadChatsDiv();
-    loadChatLog();
     socket.emit('getChat', {userId, currentChat}); 
   }
 }
 
+
 // Receive getChat
 socket.on('getChat', function(userChatsContent) {
-  //console.log(`getChat:`)   
-  //console.log(userChatsContent)
+  console.log(`getChat:`)   
+  console.log(userChatsContent)
   chats = userChatsContent;         // set chats
-  
-  // set selected chat div
-  let messages;
-  for(i=0; i<chats.length; i++) {
-    let chat = chats[i];
-    if (chat.id === currentChat) {
-      messages = chat.messages
-    }
-  }
+  loadChatLog();
+
 });
 
 // Function 'loadChatLog'
+/**
+ * Loads the currently selected chat messages into the messages element with
+ * grey text for non user and green text for current user. Sender name is also
+ * displayed for group chats.
+ */
 function loadChatLog() {
-  divRight.style.visibility = 'visible'
-  pChatName.innerHTML = `${currentChat}`
-
   let messagesToDisplay = []
-
   for(i=0; i<chats.length; i++) {
     let chat = chats[i]
     if (chat.id === currentChat) {
-      messagesToDisplay = chat.messages;
+      let messages = $("#messages");
+      messages.empty();
+      for (let message of chat.messages) {
+        let alignment;
+        let bk_color;
+        // Set background color of message based on sender
+        if (userId == message.senderId) {
+          alignment = "align-self-end";
+          bk_color = "bk-l-green";
+        } else {
+          alignment = "align-self-start";
+          bk_color = "bg-light";
+        }
+        // add names to chat messages if its a group chat
+        if (chat.id[0] == "g") {
+            senderName = getUserName(userId);
+        }
+        else {
+          senderName = "";
+        }
+        
+        let htmlString = `<li class="list-group-item border-0 ${alignment}"><div>${senderName}</div>
+        <div class="${bk_color} d-inline-block rounded py-2 px-3 mr-3">${message.content}<div class="text-muted small text-nowrap m-2 float-right">2:33 am</div></div></li>`;
+        messages.append(htmlString);
+        }
+        $("#messagesWrapper").animate({
+            scrollTop: $("#messagesWrapper")[0].scrollHeight
+        }, 500
+        );
+        $("#rightSideBar").removeClass("d-none");
+        $("#rightSideBar").addClass("d-block");
+        $("#leftSideBar").removeClass("d-block");
+        $("#leftSideBar").addClass("d-none");
+        break;
+      }
+    
     }
-  }
-
-  //TODO: display messages in'messagesToDisplay'
-  console.log('messages to display: ')
-  console.log(messagesToDisplay);
-
 }
 
 // Send message 
 $("#sendMsg").on("click", function (event) {
   event.preventDefault();
+  console.log(event);
   let msgContent = inputMsgInput.value;
   if (msgContent != '') {
     console.log(`------------------------sent: '${msgContent}', from ${userId} to ${currentChat}`);
@@ -248,12 +283,16 @@ $("#sendMsg").on("click", function (event) {
 
 // Receive 'newMessage'
 socket.on('newMessage', function(chat) {
-  //console.log('------------------------received:')
-  //console.log(chat);
+  console.log('------------------------received:')
+  console.log(chat);
   loadChatLog();
 })
 
 // Navigation between elements logic
+/**
+ * Clicking the Group Settings option in the drop down menu will go to the
+ * Group Settings
+ */
 $("#goToGroupSettingsButton").on("click", function (event) {
   event.preventDefault();
   $("#userSettingsSidebar").addClass("d-none");
@@ -261,27 +300,51 @@ $("#goToGroupSettingsButton").on("click", function (event) {
   $("#userChatListSidebar").addClass("d-none");
 });
   
+/**
+ * Clicking the User Settings option in the drop down menu will go to the
+ * User Settings
+ */
 $("#goToSettingsButton").on("click", function (event) {
   event.preventDefault();
   $("#userSettingsSidebar").removeClass("d-none");
   $("#groupSettingsSidebar").addClass("d-none");
   $("#userChatListSidebar").addClass("d-none");
 });
-  
-$(".back-arrow").on("click", function (event) {
+ 
+/**
+ * Clicking the back arrow from User or Group Settings will go to the
+ * List of Chats
+ */
+$("#leftSideBarContainer .back-arrow").on("click", function (event) {
   event.preventDefault();
   console.log("WHAAATTT");
   $("#userSettingsSidebar").addClass("d-none");
   $("#groupSettingsSidebar").addClass("d-none");
   $("#userChatListSidebar").removeClass("d-none");
 });
-  
+ 
+/**
+ * Clicking the sign out button from the drop down menu will sign out the user.
+ */
 $("#goToSignOutButton").on("click", function (event) {
   event.preventDefault();
   window.location.href = 'index.html';
+  //TODO Actually sign out user!
 });
 
 // Function 'stringContainsNumber'
 function stringContainsNumber(string) {
   return /\d/.test(string);    // regex
 }
+
+/**
+ * On the ChatHistory side in the mobile version, clicking the back
+ * arrow will return the display to the list of chats
+ */
+$("#chatHistorySide .back-arrow").on("click", function (event) {
+  event.preventDefault();
+  $("#rightSideBar").addClass("d-none")
+  $("#rightSideBar").removeClass("d-block")
+  $("#leftSideBar").addClass("d-block")
+  $("#leftSideBar").removeClass("d-none")
+});

@@ -7,9 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
     integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
     crossorigin="anonymous"></script>
@@ -19,13 +17,11 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet">
   <link type="text/css" rel="stylesheet" href="css/style.css">
 
-</head>
-
 <body>
   <section id="homePage" class="vh-100">
     <div class="container-fluid h-100 d-flex flex-column">
       <div class="row justify-content-center flex-grow-1">
-        <div id="leftSideBar" class="col-sm-12 col-lg-3 h-sm-100">
+        <div id="leftSideBar" class="col-sm-12 col-lg-3 h-sm-100 d-lg-block">
           <div id="leftSideBarContainer" class="container-fluid h-100 border">
             <div id="userSettingsSidebar" class="d-none h-100">
               <div class="row h-20">
@@ -56,8 +52,7 @@
                 <h1>New Group</h1>
               </div>
               <div class="row h-80 w-100">
-                <div id="groupSettings" class="w-100 d-flex flex-column align-items-center"
-                  style="background-color: pink;">
+                <div id="groupSettings" class="w-100 d-flex flex-column align-items-center">
                   <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle m-lg-5">
                   <div class="w-75">
                     <form>
@@ -90,7 +85,7 @@
                   <div class="row h-50">
                     <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="col-auto rounded-circle">
                     <p class="name userNameHome"></p>
-                    <div class="dropdown ml-auto">
+                    <div class="dropleft ml-auto">
                       <span class="col-auto material-icons-outlined dropdown-toggle" type="button"
                         id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">settings</span>
@@ -100,82 +95,61 @@
                             <button id="goToSignOutButton" class="dropdown-item">Sign Out</a>
                       </div>
                     </div>
-                  </div>
-                  <div class="row h-50">
-                    <input id="searchChats" type="text" class="form-control rounded" placeholder="Search Chats">
-                  </div>
                 </div>
-              </div>
-              <div class="row h-80">
-                <ul id="chatList" class="list-group w-100">
-                  <!-- <li class="chat-list-item list-group-item active">
-                    <div class="chat-list-item-wrapper row">
-                      <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle">
-                      <p class="name">Frank N. Stein</p>
-                      <span id="newMessageIcon" class="material-icons-outlined ml-auto">priority_high</span>
-                      <span id="notOnline" class="material-icons-outlined" hidden>circle</span>
-                      <span id="online" class="material-icons-round">circle</span>
-                      <span id="notFavourite" class="material-icons-outlined" hidden>star_outline</span>
-                      <span id="favourite" class="material-icons-outlined">star</span>
-                    </div>
-                  </li>
-                  <li class="chat-list-item list-group-item">
-                    <div class="chat-list-item-wrapper row">
-                      <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle">
-                      <p class="name">Drake U. La</p>
-                      <span id="newMessageIcon" class="material-icons-outlined ml-auto">priority_high</span>
-                      <span id="notOnline" class="material-icons-outlined">circle</span>
-                      <span id="online" class="material-icons-round" hidden>circle</span>
-                      <span id="notFavourite" class="material-icons-outlined">star_outline</span>
-                      <span id="favourite" class="material-icons-outlined" hidden>star</span>
-                    </div>
-                  </li> -->
-
-                </ul>
+                <div class="row h-50">
+                  <input id="searchChats" type="text" class="form-control rounded" placeholder="Search Chats">
+                </div>
               </div>
             </div>
-          </div>
+            <div class="row h-80">
+              <ul id="chatList" class="list-group w-100">
+            </ul>
         </div>
-        <div id="rightSideBar" class="col-sm-12 col-lg-9">
-          <div id="chatHistorySide" class="container-fluid h-100">
-            <div class="row h-10">
-              <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle">
-              <p class="name chatName">First Last</p>
-              <div class="dropleft ml-auto p-0 m-0">
-                <span class="material-icons-outlined dropdown-toggle" type="button" id="dropdownMenuButton"
-                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">settings</span>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <div id="groupSettingsOptions" class="vh-90 vw-25 d-flex flex-column">
-                    <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle m-lg-5">
-                    <button class="btn btn-primary m-3">View Members</button>
-                    <button class="btn btn-primary m-3">Mute Notifications</button>
-                    <button class="btn btn-primary m-3">Leave Group</button>
-                  </div>
-                </div>
-              </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="rightSideBar" class="col-sm-12 col-lg-9 d-none d-lg-block">
+        <div id="chatHistorySide" class="container-fluid h-100 d-none">
+                <div class="row h-10">
+                <span class="back-arrow material-icons-outlined text-primary d-block d-lg-none">arrow_back</span>
+                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle">
+                <p class="name chatName">First Last</p>
+                <div class="dropleft ml-auto p-0 m-0">
+                    <span class="material-icons-outlined dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">settings</span>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <div id="groupSettingsOptions" class="chat-info-menu d-flex flex-column">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle img-fluid m-sm-3 m-lg-5">
+                        <button class="btn btn-primary m-3">View Members</button>
+                        <button class="btn btn-primary m-3">Mute Notifications</button>
+                        <button class="btn btn-primary m-3">Leave Group</button>
+                        </div>
+                    </div>
+                    </div>                                
             </div>
             <div class="row h-90">
-              <div class="col">
-                <div class="row h-90">
-                  <ul id="messages" class="list-group border w-100">
-                    <li class="list-group-item">MESSAGES GO HERE</li>
-                  </ul>
+                <div class="col">
+                <div id="messagesWrapper" class="row h-90">
+                    <ul id="messages" class="list-group border d-flex flex-column justify-content-end w-100">
+                        <li class="list-group-item align-self-end border-0"><div class="bg-light d-inline-block rounded py-2 px-3 mr-3">MESSAGES GO HERE<div class="text-muted small text-nowrap m-2 float-right">2:33 am</div></div></li>
+                        <li class="list-group-item align-self-start border-0"><div class="bg-light d-inline-block rounded py-2 px-3 mr-3">MESSAGES GO HERE<div class="text-muted small text-nowrap m-2 float-right">2:33 am</div></div></li>
+
+                        </ul>
                 </div>
                 <div class="row h-10" style="background-color:grey;">
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span class="material-icons-outlined" style="font-size: 48px;">attachment</span>
-                    </div>
-                    <input id="msgInput" type="text" class="h-100 form-control rounded">
-                    <div class="input-group-append">
-                      <button id="sendMsg" class="btn btn-outline-secondary" type="button">
-                        <span class="material-icons-outlined" style="font-size: 48px; color:black;">send</span></button>
-                    </div>
-                  </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="material-icons-outlined" style="font-size: 48px;">attachment</span>
+                        </div>
+                        <input id="msgInput" type="text" class="h-100 form-control rounded">
+                        <div class="input-group-append">
+                            <button id="sendMsg" class="btn btn-outline-secondary" type="button">
+                                <span class="material-icons-outlined" style="font-size: 48px; color:black;">send</span></button>
+                        </div>
+                        </div>
                 </div>
-              </div>
+                </div>
             </div>
-
           </div>
         </div>
       </div>
