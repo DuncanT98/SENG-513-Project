@@ -130,7 +130,7 @@ $("#searchChats").on("click", function (event) {
       loadChatsDiv();
       loadChatLog();
       inputSearchChats.value = '';
-    } else {
+    } else if (showChat !== null) {
       alert(`'${showChat}' is an invalid id.`);
     }
   } 
@@ -152,7 +152,7 @@ $("#searchChats").on("click", function (event) {
       }
       socket.emit('newIndiChat', newChatInfo);
       inputSearchChats.value = '';
-    } else {
+    } else if (input !== null) {
       alert(`'${input}' is an invalid input.`);
     }
   } 
