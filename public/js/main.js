@@ -69,7 +69,7 @@ socket.on('newSignUp', function(user) {
   console.log(users)
 })
 
-// Search Chats
+// Enter Command, before this was "Search Chats"
 $("#searchChats").on("click", function (event) {
   event.preventDefault();
   console.log('-------------------------------search bar selected')
