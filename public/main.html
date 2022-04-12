@@ -166,16 +166,19 @@
                   </ul>
                 </div>
                 <div class="row h-10" style="background-color:grey;">
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span class="material-icons-outlined" style="font-size: 48px;">attachment</span>
-                    </div>
-                    <input id="msgInput" type="text" class="h-100 form-control rounded">
-                    <div class="input-group-append">
-                      <button id="sendMsg" class="btn btn-outline-secondary" type="button">
-                        <span class="material-icons-outlined" style="font-size: 48px; color:black;">send</span></button>
-                    </div>
-                  </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <label for="actualUploadButton" style="font-size: 48px; color:black;">
+                            <span class="input-group-text material-icons-outlined border-0" style="background-color:grey;">attachment</span></label>
+                            <input type="file" id="actualUploadButton" hidden/>
+                        </div>
+                        <input id="msgInput" type="text" class="h-100 form-control rounded">
+                        <div class="input-group-append">
+                            <button id="sendMsg" class="btn btn-outline-secondary" type="button">
+                                <span class="material-icons-outlined" style="font-size: 48px; color:black;">send</span></button>
+                        </div>
+                        </div>
+                </div>
                 </div>
               </div>
             </div>

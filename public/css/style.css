@@ -47,6 +47,10 @@ img {
     background-color: #e2f0d9;
 }
 
+span {
+    font-size: 48px;
+}
+
 @media (min-width: 600px) {
     .chat-info-menu {
         width: 25vw;

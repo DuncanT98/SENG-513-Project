@@ -350,10 +350,16 @@ function loadChatLog() {
         else {
           senderName = "";
         }
+        let msgContent = message.content
+        if (msgContent.startsWith("file(")) {
+          let fileId = msgContent.substring(msgContent.indexOf("(") + 1, msgContent.lastIndexOf(")"));
+          let fileName = msgContent.substring(msgContent.lastIndexOf(")") + 1);
+          msgContent=`<a class="downloadSharedFile" href="#" onclick="downloadSharedFile(event)" data-filename="${fileName}" data-id="${fileId}">${fileName}<\a>`
+        }
         
         let time = '2:33 am'    //TODO: implement time
         let htmlString = `<li class="list-group-item border-0 ${alignment}"><div>${senderName}</div>
-        <div class="${bk_color} d-inline-block rounded py-2 px-3 mr-3">${message.content}<div class="text-muted small text-nowrap m-2 float-right">${time}</div></div></li>`;
+        <div class="${bk_color} d-inline-block rounded py-2 px-3 mr-3">${msgContent}<div class="text-muted small text-nowrap m-2 float-right">${time}</div></div></li>`;
         messages.append(htmlString);
         }
         $("#messagesWrapper").animate({
@@ -368,6 +374,49 @@ function loadChatLog() {
       }
     }
 }
+
+/**
+ * Callback method when a shared file <a> tag is clicked on. Sends the getFile request to the server
+ * with the file id and filename
+ * @param {} event 
+ * @returns 
+ */
+function downloadSharedFile(event) {
+  event.preventDefault();
+  let fileId = $(event.target).data("id");
+  let fileName = $(event.target).data("filename");
+  socket.emit("getFile", fileName, fileId);
+  return false;
+}
+
+/**
+ * When the file is received convert it to string and download it.
+ */
+socket.on("sendFile", function(fileName, fileContents) {
+  let enc = new TextDecoder("utf-8");
+  fileContents = enc.decode(fileContents);
+  download(fileName, fileContents);
+});
+
+/**
+ * This function is copied directly from this stack overflow article
+ * https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+ * @param {*} filename 
+ * @param {*} text 
+ */
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:plain/text;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
 
 // Send message 
 $("#sendMsg").on("click", function (event) {
@@ -579,3 +628,26 @@ $("#btnMute").on("click", function (event) {
   event.preventDefault();
   //TODO:
 });
+
+/**
+ * When the user changes the selected file, the file is read and sent to the server
+ */
+$("#actualUploadButton").on('change', function(event) {
+  event.preventDefault();
+  // Adapted from this stack overflow question
+  //https://stackoverflow.com/questions/16505333/get-the-data-of-uploaded-file-in-javascript
+  let filename = $(this)[0].files[0].name;
+  const reader = new FileReader()
+  reader.onload = function(event){
+    let msg = {
+      senderId: userId,
+      fileName: filename,
+      fileContent : event.target.result
+    };
+    socket.emit('sendFile', {chatId:currentChatId, msg:msg});
+  
+  };
+  reader.readAsArrayBuffer(event.target.files[0]);
+});
+
+

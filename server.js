@@ -1,12 +1,34 @@
+//MongoDB needed for GridFS, check with Duncan
+const stream = require("stream");
+
+const mongodb = require("mongodb");
+var fs = require('fs');
+
+let credentials = fs.readFileSync("./credentials.txt", "utf-8");
+credentials = credentials.split("\n")
+let databaseUsername = credentials[0];
+let databasePassword = credentials[1];
+let databaseHostname = credentials[2];
+let databaseOptions = credentials[3];
+const uri = `mongodb+srv://${databaseUsername}:${databasePassword}@${databaseHostname}${databaseOptions}`;
+console.log(uri);
+// Create a new MongoClient
+const client = new mongodb.MongoClient(uri);
+
+client.connect().then((result) => server.listen(PORT, () => console.log(`Server running on port ${PORT}...`))).catch((err) => console.log(err))
+
+// /****************************************************** */
+
+
 const path = require('path');
 const http = require('http');
 const express = require('express');   // npm run dev
 const socketio = require('socket.io');
 const { addUser, addChatToUser, getUsers, getUserIds, 
   getUserChatIds, getUserInfo, getUsersAndStatus, setStatus, 
-  setUsername, setPassword} = require('./utils/users.js');
+  setUsername, setPassword, setUsers} = require('./utils/users.js');
 const { getNewChatId, addChat, getChat, addMsg,
-  getChatsContent, getChats, setSeen } = require('./utils/chats.js');
+  getChatsContent, getChats, setSeen, setChats} = require('./utils/chats.js');
 
 // Server
 const app = express();
@@ -18,9 +40,82 @@ let usersAndSockets = []
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
-
+let serverStarted = false;
 // Run when client connects
 io.on('connection', socket => {  
+
+  const db = client.db("ChatApp");
+  const bucket = new mongodb.GridFSBucket(db);
+  
+  async function saveChatsToDatabase() {
+      // if chats are not in database, initialize empty list
+    const query = { _id: "chatInfo" };
+    let searchResult = await db.collection("chats").findOne(query);
+    if (searchResult == null) {
+      const doc = { _id: "chatInfo", chats: getChats() };
+      let x = await db.collection("chats").insertOne(doc);
+      console.log(x.insertedId);
+    }
+      console.log("HERE");
+      console.log(getChats());
+      const filter = { _id: "chatInfo"}
+      const replace = {chats: getChats() };
+      const result = await db.collection("chats").replaceOne(filter,replace);
+    console.log(
+      `The chats were inserted with the _id: ${result}`,
+    );
+    }
+    
+    async function saveUsersToDatabase() {
+      // if users are not in database, initialize empty list
+      const query = { _id: "userInfo" };
+      let searchResult = await db.collection("users").findOne(query);
+      if (searchResult == null) {
+        const doc = { _id: "userInfo", users: getUsers() };
+        await db.collection("users").insertOne(doc);
+      }
+      const filter = { _id: "userInfo"}
+      const replace = {users: getUsers() };
+      const result = await db.collection("users").replaceOne(filter,replace);
+      console.log(
+        `The users were inserted with the _id: ${result}`,
+      );
+      }
+  
+  async function getChatsFromDatabase() {
+    const query = { _id: "chatInfo" };
+    const result = await db.collection("chats").findOne(query);
+    let newChats;
+    if (result == null) {
+      newChats = [];
+    } else {
+      newChats = result["chats"];
+    }
+    console.log(newChats);
+    setChats(newChats);
+    }
+  
+    async function getUsersFromDatabase() {
+      const query = { _id: "userInfo" };
+      const result = await db.collection("users").findOne(query);
+      console.log(result);
+      let newUsers;
+      if (result == null) {
+        newUsers = [];
+      } else {
+        newUsers = result["users"];
+      }
+      setUsers(newUsers);
+      }
+  
+      if (!serverStarted) {
+        serverStarted = true;
+        getChatsFromDatabase();
+        getUsersFromDatabase();
+      }
+      saveUsersToDatabase();
+      saveChatsToDatabase();
+  
   // Emit 'usersObject', send users
   const users = getUsers();
   socket.emit('usersObject', users)
@@ -168,8 +263,40 @@ io.on('connection', socket => {
     }
   })
 
+    // Receive 'sendMessage'
+    socket.on('sendFile', function (obj) {
+      let contentOfObj = obj.msg;
+      const readable = new stream.Readable()
+      readable._read = () => {} // _read is required but you can noop it
+      readable.push(contentOfObj.fileContent)
+      readable.push(null)
+      let insertedId = readable.pipe(bucket.openUploadStream(contentOfObj.fileName)).id;
+      obj.msg = {
+        senderId: obj.msg.senderId,
+        content: `file(${insertedId})${contentOfObj.fileName}`
+      }
+      // addMsg(obj);    
+      // let chatId = obj.currentChat;           
+      // let chatContent = getChat(chatId);      // get updated chat
+      // let chats = getChats();
+      // io.emit('newMessage', chatContent);     // emit updated chat 
+      // io.emit('chats', chats);
+    let updatedChat = addMsg(obj);            // add message to chat
+    io.emit('newMessage', updatedChat);
+    })
+  
+    socket.on("getFile", function(fileName, fileId) {
+      let filestream = bucket.openDownloadStream(mongodb.ObjectId(fileId)).pipe(fs.createWriteStream('./outputFile'));
+      filestream.on('finish', async() => {
+        let fileContents = fs.readFileSync('./outputFile');
+        socket.emit('sendFile', fileName, fileContents);
+        fs.unlinkSync('./outputFile');
+      });
+
+    });
+
 })
 
 // Server
 const PORT = 3000 || process.env.PORT;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}...`));
+// server.listen(PORT, () => console.log(`Server running on port ${PORT}...`));

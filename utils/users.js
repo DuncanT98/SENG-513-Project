@@ -1,36 +1,5 @@
 // Createe users
-const users = [];
-
-let  user1 = {
-  id : 'u1',
-  username : "user1",
-  password : '123',
-  chats : ['i1', 'g1'],
-  favs : [],
-  status : 'ofline'
-}
-
-let user2 = {
-  id : 'u2',
-  username : 'user2',
-  password : '123',
-  chats : ['i1', 'g1'],
-  favs : [],
-  status : 'ofline'
-}
-
-let user3 = {
-  id : 'u3',
-  username : 'user3',
-  password : '123',
-  chats : ['g1'],
-  favs : [],
-  status : 'ofline'
-}
-
-users.push(user1);
-users.push(user2);
-users.push(user3);
+let users = [];
 
 // Function addUser
 function addUser(user) {
@@ -50,6 +19,10 @@ function addChatToUser(userId, chatId) {
 // Function getUsers
 function getUsers() {
   return users;
+}
+
+function setUsers(newUsers) {
+  users = newUsers;
 }
 
 // Function getUserIds
@@ -146,5 +119,6 @@ module.exports = {
   getUsersAndStatus,
   setUsername,
   setPassword,
-  setStatus
+  setStatus,
+  setUsers
 }
