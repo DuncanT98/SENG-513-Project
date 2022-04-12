@@ -70,6 +70,11 @@ socket.on('newSignUp', function(user) {
 })
 
 // Enter Command, before this was "Search Chats"
+/***
+ * This callback populates the selectOptions select menu with
+ * chats if the user has selected Search Chats or users if the 
+ * user has selected Search Users.
+ */
 $("#searchChats").on("change", function (event) {
   event.preventDefault();
   let option = $(this).val();
@@ -135,16 +140,19 @@ $("#searchChats").on("change", function (event) {
     options.prop("disabled", true);
 
   }
+
 });
 
+/**
+ * This callback adds a new chat if a user has selected a new user to chat with
+ * and selects a displayed chat if a user has selected a new chat from the select menu
+ */
 $("#selectOptions").on("change", function (event) {
   event.preventDefault();
   let option = $(this).val();
   let optionType = $(this).find(':selected').data('type');
   if (optionType == "chat") {
     currentChatId = $(this).find(':selected').data('cid')
-    console.log("hhhhhhh")
-    console.log(currentChatId)
     $("#chatHistorySide").removeClass("d-none");
     $('#chatList .active').removeClass('active');
     loadChatsDiv();
