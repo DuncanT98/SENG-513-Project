@@ -1,81 +1,16 @@
-const chats = [];
-
-// Set chats 
-let chat1 = {
-  id : "i1",
-  name : "Indi",
-  members : ["u1", "u2"],
-  messages : [
-    {
-      senderId : "u1",
-      content : "hey"
-    },
-    {
-      senderId: "u2",
-      content : "hello"
-    },
-    {
-      senderId: "u1",
-      content : "how are you?"
-    },
-    {
-      senderId: "u2",
-      content : "good." 
-    }
-  ]
-};
-
-let chat2 = {
-  id : "i2",
-  name : "Indi",
-  members : ["u1", "u3"],
-  messages : [
-    {
-      senderId : "u1",
-      content : "hey"
-    },
-    {
-      senderId: "u3",
-      content : "hello"
-    },
-    {
-      senderId: "u1",
-      content : "how are you?"
-    },
-    {
-      senderId: "u3",
-      content : "good." 
-    }
-  ]
-};
-
-let group1 = {
-  id : "g1",
-  name : "Group 1",
-  members : ["u1", "u2", "u3"],
-  messages : [
-    {
-      senderId : "u1",
-      content : "Hello everyone!"
-    }
-  ]
-}
-
-chats.push(chat1);
-chats.push(chat2)
-chats.push(group1);
+let chats = [];
 
 // Function getNewChatId
 function getNewChatId(type) {
   let maxChat = 0
-  for (i = 0; i < chats.length; i++) {
+  for (let i = 0; i < chats.length; i++) {
     let chat = chats[i]
     if(type === 'Indi' && chat.name === "Indi") {
       let id = parseInt(chat.id.substring(1));
       if (id > maxChat) {
         maxChat = id
       }
-    } else if (type === 'Group' && chat.name === 'Group') {
+    } else if (type === 'Group' && chat.name !== 'Indi') {    //TODO:check condition will not break
       let id = parseInt(chat.id.substring(1));
       if (id > maxChat) {
         maxChat = id
@@ -99,13 +34,14 @@ function addChat(newChat) {
 
 // Function addMsg
 function addMsg(obj) {
-  let chatId = obj.currentChat;
+  let chatId = obj.chatId;
   let msg = obj.msg;
-  for(i=0; i<chats.length; i++) {
+  for(let i=0; i<chats.length; i++) {
     let chat = chats[i];
     if (chat.id === chatId) {
       chat.messages.push(msg);
-      return;     // end for loop 
+      chat.seen = []
+      return chat;
     }
   }
 }
@@ -140,6 +76,18 @@ function getChats() {
   return chats;
 }
 
+function setChats(newChats) {
+  chats = newChats;
+}
+
+function setSeen(obj) {
+  for (let chat of chats) {
+    if(chat.id === obj.chatId) {
+      chat.seen.push(obj.userId)
+    }
+  }
+}
+
 // export 
 module.exports = {
   getNewChatId,
@@ -147,5 +95,7 @@ module.exports = {
   addMsg, 
   getChat,
   getChatsContent,
-  getChats
+  getChats,
+  setSeen,
+  setChats,
 }

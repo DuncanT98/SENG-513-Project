@@ -1,39 +1,5 @@
 // Createe users
-const users = [];
-
-let  user1 = {
-  id : 'u1',
-  firstName : 'First1',
-  lastName : 'Last1',
-  email : 'user1@mail.com',
-  password : '123',
-  chats : ['i1', 'g1'],
-  favs : []
-}
-
-let user2 = {
-  id : 'u2',
-  firstName : 'First2',
-  lastName : 'Last2',
-  email : 'user2@mail.com',
-  password : '123',
-  chats : ['i1', 'g1'],
-  favs : []
-}
-
-let user3 = {
-  id : 'u3',
-  firstName : 'First3',
-  lastName : 'Last3',
-  email : 'user3@mail.com',
-  password : '123',
-  chats : ['i1', 'g1'],
-  favs : []
-}
-
-users.push(user1);
-users.push(user2);
-users.push(user3);
+let users = [];
 
 // Function addUser
 function addUser(user) {
@@ -55,6 +21,10 @@ function getUsers() {
   return users;
 }
 
+function setUsers(newUsers) {
+  users = newUsers;
+}
+
 // Function getUserIds
 function getUserIds() {
   const userIds = []
@@ -63,11 +33,6 @@ function getUserIds() {
     userIds.push(user.id);
   }
   return userIds;
-}
-
-// getUserIndex
-function getUserIndexByEmail(email) {
-  return(users.findIndex(user => user.email === email))
 }
 
 // Function getUserChats
@@ -82,10 +47,63 @@ function getUserChatIds(userId) {
 
 // Function getUserInfo
 function getUserInfo(userId) {
-  for(i=0; i<users.length; i++) {
+  for(let i=0; i<users.length; i++) {
     let user = users[i];
     if (user.id === userId) {
       return user;
+    }
+  }
+}
+
+// Function getUsersAndStatus
+function getUsersAndStatus() {
+  let array = []
+  for(let i=0; i<users.length; i++) {
+    let user = users[i];
+    let item = {
+      userId: user.id,
+      status : user.status
+    }
+    array.push(item);
+  }
+  return array;
+}
+
+// Function 'setUsername'
+function setUsername(obj) {
+  let userId = obj.userId;
+  let newUsername = obj.newUsername;
+  for(let i=0; i<users.length; i++) {
+    let user = users[i];
+    if (user.id === userId) {
+      user.username = newUsername;
+      return user;
+    }
+  }
+}
+
+// Function 'setPassword'
+function setPassword(obj) {
+  let userId = obj.userId;
+  let newPassword = obj.newPassword;
+  for(let i=0; i<users.length; i++) {
+    let user = users[i];
+    if (user.id === userId) {
+      user.password = newPassword;
+      return user;
+    }
+  }
+}
+
+// Function 'setStatus'
+function setStatus(obj) {
+  let userId = obj.userId;
+  let newStatus = obj.status;
+  for(let i=0; i<users.length; i++) {
+    let user = users[i];
+    if (user.id === userId) {
+      user.status = newStatus;
+      break;
     }
   }
 }
@@ -96,7 +114,11 @@ module.exports = {
   addChatToUser,
   getUsers,
   getUserIds,
-  getUserIndexByEmail,
   getUserChatIds,
-  getUserInfo
+  getUserInfo,
+  getUsersAndStatus,
+  setUsername,
+  setPassword,
+  setStatus,
+  setUsers
 }

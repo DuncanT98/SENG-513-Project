@@ -23,17 +23,15 @@ sectionSignUp.addEventListener('submit', function(e) {
   e.preventDefault();
 
   // Get username and password
-  let firstName = e.target.elements.firstName.value;
-  let lastName = e.target.elements.lastName.value;
-  let email = e.target.elements.email.value;
+  let username = e.target.elements.username.value;
   let password = e.target.elements.password.value;
 
   // Check email
   let unique = true;
   for (index = 0; index < users.length; index++) {
     let user = users[index];
-    if (user.email === email) {
-      alert("Email exists.")
+    if (user.username === username) {
+      alert("Username exists.")
       unique = false;
     }
   }
@@ -43,9 +41,7 @@ sectionSignUp.addEventListener('submit', function(e) {
     let userId = "u" + (userIds.length+1)
     let user = {
       id : userId,
-      firstName : firstName,
-      lastName : lastName,
-      email : email,
+      username : username,
       password : password,
       chats : [],
       favs : []
