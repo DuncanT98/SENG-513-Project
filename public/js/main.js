@@ -70,12 +70,16 @@ socket.on('newSignUp', function(user) {
 })
 
 // Enter Command, before this was "Search Chats"
-$("#searchChats").on("click", function (event) {
+/***
+ * This callback populates the selectOptions select menu with
+ * chats if the user has selected Search Chats or users if the 
+ * user has selected Search Users.
+ */
+$("#searchChats").on("change", function (event) {
   event.preventDefault();
-  console.log('-------------------------------search bar selected')
+  let option = $(this).val();
 
   // Dispaly user's chats
-  console.log('--chats:')
   let displayedUsers = []                       // store existing individual chats
   let chatsToDisplay = []                       // store chats to display
   let chatIdsToDisplay = []                     // store Ids of chats to display
@@ -87,20 +91,17 @@ $("#searchChats").on("click", function (event) {
       let recipientName = getUsername(recipientId);                               // get username
       
       // display and store individual chat info
-      console.log(`${recipientName}, id = ${chat.id} `)                           
       chatsToDisplay.push(`${recipientName}, id = ${chat.id} `)                   
       chatIdsToDisplay.push(chat.id)
       displayedUsers.push(recipientId);
     } else {
       // display and store group chat info
-      console.log(`${chat.name}, id = ${chat.id}`)
-      chatsToDisplay.push(`${chat.name}, id = ${chat.id} `)
+      chatsToDisplay.push(`${chat.name}, (id = ${chat.id})`)
       chatIdsToDisplay.push(chat.id)
     }
   }
 
   // dispaly users 
-  console.log('--users:')
   let usersToDisplay = []                                     // store users to display 
   for (let i=0; i<users.length; i++) {
     let user = users[i]
@@ -108,41 +109,57 @@ $("#searchChats").on("click", function (event) {
       let username = getUsername(user.id);
 
       // store info 
-      console.log(username);
       usersToDisplay.push(username);
     }
   }
+  let options = $("#selectOptions");
+  options.empty();
 
-  // check user input 
-  let userInput = inputSearchChats.value;
-
-  // if 'view chat'
-  if (userInput === 'view chat') {
-    let showChat = prompt(`Chats: ${chatsToDisplay} \nEnter chat id:`);
-
-    // check valid input
-    if (chatIdsToDisplay.includes(showChat)) {
-
-      // show the chat
-      currentChatId = showChat;
-      $("#chatHistorySide").removeClass("d-none");
-      $('#chatList .active').removeClass('active');
-      loadChatsDiv();
-      loadChatLog();
-      inputSearchChats.value = '';
-    } else if (showChat !== null) {
-      alert(`'${showChat}' is an invalid id.`);
+  let optionString;
+  if (option == "Search Users") {
+    options.append(`<option disabled selected data-type="user" value> -- select user -- </option>`)
+    for (let username of usersToDisplay) {
+        optionString = `<option data-type="user">${username}</option>`;
+        options.append(optionString);
+      
     }
-  } 
-  
-  // if 'add user'
-  else if (userInput == 'add user') {
-    let input = prompt(`Users: ${usersToDisplay} \nEnter username:`);
+    options.prop("disabled", false);
 
-    // check input
-    if (usersToDisplay.includes(input)) {
-      // get user id
-      let addUser = users.filter((user) => {return user.username === input})[0]     
+  } else if (option == "Search Chats") {
+    options.append(`<option disabled selected data-type="chat" data-cid="" value> -- select chat -- </option>`)
+    for (let i=0; i<chatsToDisplay.length; i++) {
+      let chatDisplay = chatsToDisplay[i];
+      let chatId = chatIdsToDisplay[i];
+      console.log(chatId);
+      optionString = `<option data-type="chat" data-cid="${chatId}">${chatDisplay}</option>`;
+      options.append(optionString);
+    }
+    options.prop("disabled", false);
+
+  } else {
+    options.prop("disabled", true);
+
+  }
+
+});
+
+/**
+ * This callback adds a new chat if a user has selected a new user to chat with
+ * and selects a displayed chat if a user has selected a new chat from the select menu
+ */
+$("#selectOptions").on("change", function (event) {
+  event.preventDefault();
+  let option = $(this).val();
+  let optionType = $(this).find(':selected').data('type');
+  if (optionType == "chat") {
+    currentChatId = $(this).find(':selected').data('cid')
+    $("#chatHistorySide").removeClass("d-none");
+    $('#chatList .active').removeClass('active');
+    loadChatsDiv();
+    loadChatLog();
+  } else if (optionType == "user") {
+          // get user id
+      let addUser = users.filter((user) => {return user.username === option})[0]     
       let addUserId = addUser.id                                                    
       
       // create chat
@@ -151,16 +168,10 @@ $("#searchChats").on("click", function (event) {
         toUser : addUserId
       }
       socket.emit('newIndiChat', newChatInfo);
-      inputSearchChats.value = '';
-    } else if (input !== null) {
-      alert(`'${input}' is an invalid input.`);
-    }
-  } 
-  
-  // if invalid input
-  else {
-    alert('Enter "view chat" to view a chat. \nEnter "add user" to add a new user chat.')
+  } else {
+    return;
   }
+  $("#searchChats").val('Search Option').change();
 });
 
 // Get new individual chat from the server

@@ -102,7 +102,21 @@
                     </div>
                   </div>
                   <div class="row h-50">
-                    <input id="searchChats" type="text" class="form-control rounded" placeholder="Enter Command">
+                    <form class="w-100 d-flex justify-content-around">
+                      <div class="form-row w-100">
+                        <div class="form-group col-6">
+                          <select id="searchChats" class="form-control w-100">
+                            <option selected>Search Option</option>
+                            <option>Search Users</option>
+                            <option>Search Chats</option>
+                          </select>
+                        </div>
+                        <div class="form-group col-6">
+                          <select id="selectOptions" class="form-control w-100" disabled>
+                          </select>
+                        </div>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
