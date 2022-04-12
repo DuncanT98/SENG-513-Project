@@ -7,93 +7,183 @@ const inputSearchChats = document.getElementById('searchChats');
 const ulChatList = document.getElementById('chatList');
 const inputMsgInput = document.getElementById('msgInput');
 const btnSendMsg = document.getElementById('sendMsg');
+const inputGroupName = document.getElementById('inputGroupName');
+const selectUsers = document.getElementById('selectUsers')
+const socket = io();  
 
-
-$(document).ready(function() {
-  //divRight.style.visibility = 'hidden'
-});
-
-// Set current user info
-const socket = io();                                  
-const userId = localStorage.getItem('userId');      // Get user id
+// Set current user info                                
+const userId = localStorage.getItem('userId');        // Get user id from local storage
 let user = ''
-socket.emit('getUserInfo', userId);
-socket.on('getUserInfo', function(userInfo) {
-  user = userInfo;
+socket.emit('getUserInfo', userId);                   // Tell server to send user info
+socket.on('getUserInfo', function(userInfo) {         // Get user info from server
+  user = userInfo;                // set user
   console.log("user info: ")
   console.log(user);
 
-  // set user name
-  pUserNameH.innerHTML = user.firstName + ' ' + user.lastName
-  pUserNameS.innerHTML = user.firstName + ' ' + user.lastName
+  // set username
+  pUserNameH.innerHTML = user.username
+  pUserNameS.innerHTML = user.username
 });
+
+// Set user status to online
+socket.emit('setStatus', {id:userId, status:'online'} )
+socket.on('statusChange', function(array) {
+  //TODO:
+  //console.log('-------------------------33 status change')
+  //console.log(array)
+})
 
 // Declare variables
 let users = [];
 let chats = [];
-let currentChat = '';
+let currentChatId = '';
 
 // Receive 'usersObject', get users
 socket.on('usersObject', function(usersObject) {
   users = usersObject;
 })
 
-// Receive chats
-socket.on('chats', function(allChats) {
-  chats = []
-  for (i=0; i<allChats.length; i++) {
-    let chat = allChats[i];
-    let isMemebr = chat.members.some(function(member) {
-      return member === userId
-    });
+// Emit 'getChats', tell server to send chats 
+socket.emit('getChats', {userId : userId});
 
-    if (isMemebr) {
-      chats.push(chat);
-    }
-  }
-})
-
-// Emit 'getChats'
-socket.emit('getChats', userId);
-
-// Receive 'getChats'
+// Receive 'getChats', get chats from server
 socket.on('getChats', function(userChatsContent) {
   console.log(`Chats for ${userId}:`)   
   console.log(userChatsContent)
-  chats = userChatsContent;         // set chats
-  loadChatsDiv();   // display chats
+  chats = []
+  for (let chat of userChatsContent) {
+    // place unseen chats at the top of the list
+    if (!chat.seen.includes(userId)) {
+      chats.unshift(chat)     // insert into the front of the array
+    } else {
+      chats.push(chat);       // push to the back of the array 
+    }
+  }
+  loadChatsDiv();             // display list of chats
 })
 
-// Add new individual chat
+//  New sign up, get a new signup from the server 
+socket.on('newSignUp', function(user) {
+  console.log('-------------------------------new sign up ')
+  users.push(user);
+  console.log(users)
+})
+
+// Search Chats
 $("#searchChats").on("click", function (event) {
   event.preventDefault();
+  console.log('-------------------------------search bar selected')
 
-  // get search TODO:
-  let addUserId = inputSearchChats.value;
-  if (addUserId  != "") {
-    let newChatInfo = {
-      fromUser : userId,
-      toUser : addUserId
+  // Dispaly user's chats
+  console.log('--chats:')
+  let displayedUsers = []                       // store existing individual chats
+  let chatsToDisplay = []                       // store chats to display
+  let chatIdsToDisplay = []                     // store Ids of chats to display
+  for (let i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id[0] === 'i') {                   // individual chat
+      // display username
+      let recipientId = chat.members.filter(userId1 => userId1 !== userId)[0]     // get id of recipient
+      let recipientName = getUsername(recipientId);                               // get username
+      
+      // display and store individual chat info
+      console.log(`${recipientName}, id = ${chat.id} `)                           
+      chatsToDisplay.push(`${recipientName}, id = ${chat.id} `)                   
+      chatIdsToDisplay.push(chat.id)
+      displayedUsers.push(recipientId);
+    } else {
+      // display and store group chat info
+      console.log(`${chat.name}, id = ${chat.id}`)
+      chatsToDisplay.push(`${chat.name}, id = ${chat.id} `)
+      chatIdsToDisplay.push(chat.id)
     }
-    socket.emit('newIndiChat', newChatInfo);
-    //loadChatsDiv(chats)
+  }
+
+  // dispaly users 
+  console.log('--users:')
+  let usersToDisplay = []                                     // store users to display 
+  for (let i=0; i<users.length; i++) {
+    let user = users[i]
+    if (!displayedUsers.includes(user.id) && user.id !== userId) {    // check existing chat does not exist and not current user 
+      let username = getUsername(user.id);
+
+      // store info 
+      console.log(username);
+      usersToDisplay.push(username);
+    }
+  }
+
+  // check user input 
+  let userInput = inputSearchChats.value;
+
+  // if 'view chat'
+  if (userInput === 'view chat') {
+    let showChat = prompt(`Chats: ${chatsToDisplay} \nEnter chat id:`);
+
+    // check valid input
+    if (chatIdsToDisplay.includes(showChat)) {
+
+      // show the chat
+      currentChatId = showChat;
+      $("#chatHistorySide").removeClass("d-none");
+      $('#chatList .active').removeClass('active');
+      loadChatsDiv();
+      loadChatLog();
+      inputSearchChats.value = '';
+    } else {
+      alert(`'${showChat}' is an invalid id.`);
+    }
+  } 
+  
+  // if 'add user'
+  else if (userInput == 'add user') {
+    let input = prompt(`Users: ${usersToDisplay} \nEnter username:`);
+
+    // check input
+    if (usersToDisplay.includes(input)) {
+      // get user id
+      let addUser = users.filter((user) => {return user.username === input})[0]     
+      let addUserId = addUser.id                                                    
+      
+      // create chat
+      let newChatInfo = {
+        fromUser : userId,
+        toUser : addUserId
+      }
+      socket.emit('newIndiChat', newChatInfo);
+      inputSearchChats.value = '';
+    } else {
+      alert(`'${input}' is an invalid input.`);
+    }
+  } 
+  
+  // if invalid input
+  else {
+    alert('Enter "view chat" to view a chat. \nEnter "add user" to add a new user chat.')
   }
 });
 
-// Function loadChatBar
+// Get new individual chat from the server
+socket.on('newIndiChat', function(obj) {
+  if (userId === obj.toUser  || userId === obj.fromUser) {
+    chats.unshift(obj.newChat);         // add chat to the front of chats 
+    loadChatsDiv();                     // update list of chats
+  }
+})
+
+// Display list of chats
 function loadChatsDiv() {
   ulChatList.innerHTML = ''        // clear chat list
 
   // Display chats 
-  //let first = true 
-  for (i=0; i<chats.length; i++) {
-    let chat = chats[i]
+  for (let j=0; j<chats.length; j++) {    //TODO: why does i not work 
+    let chat = chats[j]
     
     // create li
     const li = document.createElement('li');
     li.id = chat.id; 
     let liClass;
-    if (li.id === currentChat) {
+    if (li.id === currentChatId) {
       liClass = "chat-list-item list-group-item list-group-item-action active"
     } else {
       liClass = "chat-list-item list-group-item list-group-item-action";
@@ -117,7 +207,7 @@ function loadChatsDiv() {
     p.classList = "name";
     let name;
     if (chat.name === 'Indi') {
-      name = getUserName(chat.members.filter(userId1 => userId1 !== userId)[0])
+      name = getUsername(chat.members.filter(userId1 => userId1 !== userId)[0])
     } else {
       name = chat.name
     }
@@ -134,7 +224,7 @@ function loadChatsDiv() {
     
     // notOnline icon
     span2.id = 'notOnline'
-    span2.classList = 'material-icons-outlined'   //TODO: add hidden
+    span2.classList = 'material-icons-outlined'   //TODO: add hidden?
     span2.innerHTML = 'circle'
     const span3 = document.createElement('span');   
     
@@ -156,7 +246,16 @@ function loadChatsDiv() {
     span5.innerHTML = 'star'
 
     div.appendChild(p)          // name
-    div.appendChild(span1)      // newMessageIcon     //TODO:  
+
+    // Check if chat was seen
+    if (!chat.seen.includes(userId)) {
+      div.appendChild(span1)          // newMessageIcon     //TODO: fix?
+    } else {
+      span2.classList.add('ml-auto');  // ofline
+      span3.classList.add('ml-auto')   // online
+    }
+
+
     div.appendChild(span2)      // ofline
     //div.appendChild(span3)    // online
     div.appendChild(span4)      // notFavourite
@@ -170,14 +269,11 @@ function loadChatsDiv() {
 
 }
 
-// Function getUserName()
-let runOnce = true;
-function getUserName(userId) {
-  for (j=0; j<users.length; j++) {
-    let user = users[j];
+// Return username given a user id
+function getUsername(userId) {
+  for (let user of users) {
     if (user.id === userId) {
-      let myName =  user.firstName + " " + user.lastName
-      return myName
+      return  user.username;
     }
   }
 }
@@ -196,21 +292,11 @@ function chatSelected(e) {
   let id = $(this).attr("id");
   console.log(`------------------------selected: ${id}`);
   if (stringContainsNumber(id)) {
-    currentChat = id;
+    currentChatId = id;
     loadChatsDiv();
-    socket.emit('getChat', {userId, currentChat}); 
+    loadChatLog();
   }
 }
-
-
-// Receive getChat
-socket.on('getChat', function(userChatsContent) {
-  console.log(`getChat:`)   
-  console.log(userChatsContent)
-  chats = userChatsContent;         // set chats
-  loadChatLog();
-
-});
 
 // Function 'loadChatLog'
 /**
@@ -219,10 +305,20 @@ socket.on('getChat', function(userChatsContent) {
  * displayed for group chats.
  */
 function loadChatLog() {
-  let messagesToDisplay = []
-  for(i=0; i<chats.length; i++) {
+  // add user to 'seen' list in chat
+  for(let chat of chats) {
+    if (chat.id === currentChatId) {
+      chat.seen.push(userId);
+      socket.emit('seen', {userId:userId, chatId:currentChatId})
+      loadChatsDiv();
+      break;
+    }
+  }
+
+  //TODO: comment
+  for(let i=0; i<chats.length; i++) {
     let chat = chats[i]
-    if (chat.id === currentChat) {
+    if (chat.id === currentChatId) {
       let messages = $("#messages");
       messages.empty();
       for (let message of chat.messages) {
@@ -238,14 +334,15 @@ function loadChatLog() {
         }
         // add names to chat messages if its a group chat
         if (chat.id[0] == "g") {
-            senderName = getUserName(userId);
+            senderName = getUsername(message.senderId);
         }
         else {
           senderName = "";
         }
         
+        let time = '2:33 am'    //TODO: implement time
         let htmlString = `<li class="list-group-item border-0 ${alignment}"><div>${senderName}</div>
-        <div class="${bk_color} d-inline-block rounded py-2 px-3 mr-3">${message.content}<div class="text-muted small text-nowrap m-2 float-right">2:33 am</div></div></li>`;
+        <div class="${bk_color} d-inline-block rounded py-2 px-3 mr-3">${message.content}<div class="text-muted small text-nowrap m-2 float-right">${time}</div></div></li>`;
         messages.append(htmlString);
         }
         $("#messagesWrapper").animate({
@@ -264,10 +361,9 @@ function loadChatLog() {
 // Send message 
 $("#sendMsg").on("click", function (event) {
   event.preventDefault();
-  console.log(event);
   let msgContent = inputMsgInput.value;
   if (msgContent != '') {
-    console.log(`------------------------sent: '${msgContent}', from ${userId} to ${currentChat}`);
+    console.log(`------------------------sent: '${msgContent}', from ${userId} to ${currentChatId}`);
     inputMsgInput.value = '';
     inputMsgInput.focus()
 
@@ -276,16 +372,40 @@ $("#sendMsg").on("click", function (event) {
       senderId: userId,
       content : msgContent
     }
-    socket.emit('sendMessage', {currentChat, msg});
+    socket.emit('sendMessage', {chatId:currentChatId, msg:msg});
   }
 });
 
 // Receive 'newMessage'
-socket.on('newMessage', function(chat) {
-  console.log('------------------------received:')
-  console.log(chat);
-  loadChatLog();
+socket.on('newMessage', function(updatedChat) {
+  // update chats
+  for (i=0; i<chats.length; i++) {      // TODO: better way?
+    let chat = chats[i];
+    if (chat.id === updatedChat.id) {
+      console.log('------------------------received:')
+      console.log(chat);
+      chats.splice(i, 1);
+      if(chat.id === currentChatId) {
+        //chat.showNotification = false;
+        chat.seen.push(userId);
+        socket.emit('seen', {userId:userId, chatId:currentChatId})
+      }
+      chats.unshift(updatedChat); 
+      loadChatsDiv();
+      break;
+    }
+  }
+
+  if (updatedChat.id === currentChatId) {
+    loadChatLog();
+  }
+
 })
+
+// Function 'stringContainsNumber'
+function stringContainsNumber(string) {
+  return /\d/.test(string);    // regex
+}
 
 // Navigation between elements logic
 /**
@@ -297,6 +417,19 @@ $("#goToGroupSettingsButton").on("click", function (event) {
   $("#userSettingsSidebar").addClass("d-none");
   $("#groupSettingsSidebar").removeClass("d-none");
   $("#userChatListSidebar").addClass("d-none");
+
+  // set select users
+  selectUsers.innerHTML = '';
+
+  // TODO: currently, you can create multiple groups with the same users
+  for (let user of users) {
+    if (user.id !== userId) {
+      let option = document.createElement('option');
+      option.id = user.id
+      option.innerHTML = user.username
+      selectUsers.appendChild(option)
+    }
+  }
 });
   
 /**
@@ -328,13 +461,8 @@ $("#leftSideBarContainer .back-arrow").on("click", function (event) {
 $("#goToSignOutButton").on("click", function (event) {
   event.preventDefault();
   window.location.href = 'index.html';
-  //TODO Actually sign out user!
+  //TODO: Actually sign out user!
 });
-
-// Function 'stringContainsNumber'
-function stringContainsNumber(string) {
-  return /\d/.test(string);    // regex
-}
 
 /**
  * On the ChatHistory side in the mobile version, clicking the back
@@ -346,4 +474,97 @@ $("#chatHistorySide .back-arrow").on("click", function (event) {
   $("#rightSideBar").removeClass("d-block")
   $("#leftSideBar").addClass("d-block")
   $("#leftSideBar").removeClass("d-none")
+});
+
+/**
+ * In Settings, clicking 'Change Username" will open a modal TODO:
+ */
+ $("#btnChangeUsername").on("click", function (event) {
+  event.preventDefault();
+  console.log("Change username selected.");
+  const input = prompt("Enter new username:");
+  socket.emit('changeUsername', {userId: userId, newUsername:input});
+  alert('Username changed.');
+  //TODO: reload chat with new username
+  //TODO: check username is unique
+});
+
+// Change password
+$("#btnChangePassword").on("click", function (event) {
+  event.preventDefault();
+  let input = prompt("Enter password:");
+  if (user.password === input) {
+    input = prompt("Enter new password:");
+    alert('Password changed.');
+    socket.emit('changePassword', {userId: userId, newPassword:input});
+  } else {
+    alert('Incorrect password.');
+  }
+});
+
+// Create group
+ $("#btnCreateGroup").on("click", function (event) {
+  event.preventDefault();
+  let good = true;
+
+  // get group name
+  let groupSubject =  inputGroupName.value;
+  if (groupSubject === '') {
+    alert('Group subject cannot be empty.')
+    good = false;
+  }
+
+  // get group members
+  let selected = [];
+  for (let option of selectUsers.options) {
+    if (option.selected) {
+      selected.push(option.id);
+      if (good) {
+        option.selected = false;
+      }
+    }
+  }
+  if (selected.length === 0) {
+    alert('Group subject cannot be empty.')
+    good = false;
+  }
+  
+  // emit new group
+  if (good) {
+    console.log(`---------------------------created new group '${groupSubject}' with:`)
+    selected.push(userId)
+    console.log(selected)
+    socket.emit('newGroup', {selected : selected, name:groupSubject})
+    inputGroupName.value = '';
+  }
+  
+  // close 'New Group' section
+});
+
+// Receive 'newGroupChat'
+socket.on('newGroupChat', function(info) {
+  if (info.selected.includes(userId)) {
+    chats.unshift(info.newChat);
+    console.log('----------------------511')
+    console.log(chats)
+    loadChatsDiv();
+  }
+})
+
+// view members
+$("#btnViewMembers").on("click", function (event) {
+  console.log('-------------------view members selected')
+  event.preventDefault();
+  for (let chat of chats) {
+    if (chat.id === currentChatId) {
+      alert(chat.members)
+    }
+  }
+});
+
+// mute notifucations
+$("#btnMute").on("click", function (event) {
+  console.log('-------------------mute selected')
+  event.preventDefault();
+  //TODO:
 });
