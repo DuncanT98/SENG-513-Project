@@ -19,7 +19,9 @@
   "homepage": "https://github.com/DuncanT98/SENG-513-Project#readme",
   "dependencies": {
     "express": "^4.17.3",
+    "file-saver": "^2.0.5",
     "moment": "^2.29.2",
+    "mongodb": "^4.5.0",
     "socket.io": "^4.4.1"
   },
   "devDependencies": {

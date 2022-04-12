@@ -1,78 +1,4 @@
-const chats = [];
-
-// Set chats 
-let chat1 = {
-  id : "i1",
-  name : "Indi",
-  members : ["u1", "u2"],
-  seen : ["u1", "u2"],
-  showNotification : false,
-  muted : [],
-  messages : [
-    {
-      senderId : "u1",
-      content : "hey"
-    },
-    {
-      senderId: "u2",
-      content : "hello"
-    },
-    {
-      senderId: "u1",
-      content : "how are you?"
-    },
-    {
-      senderId: "u2",
-      content : "good." 
-    }
-  ]
-};
-
-let chat2 = {
-  id : "i2",
-  name : "Indi",
-  members : ["u1", "u3"],
-  seen : ["u1", "u3"],
-  showNotification : false,
-  muted : [],
-  messages : [
-    {
-      senderId : "u1",
-      content : "hey"
-    },
-    {
-      senderId: "u3",
-      content : "hello"
-    },
-    {
-      senderId: "u1",
-      content : "how are you?"
-    },
-    {
-      senderId: "u3",
-      content : "good." 
-    }
-  ]
-};
-
-let group1 = {
-  id : "g1",
-  name : "Group 1",
-  members : ["u1", "u2", "u3"],
-  seen : ["u1", "u2", "u3"],
-  muted : [],
-  showNotification : false,
-  messages : [
-    {
-      senderId : "u1",
-      content : "Hello everyone!"
-    }
-  ]
-}
-
-chats.push(chat1);
-chats.push(chat2)
-chats.push(group1);
+let chats = [];
 
 // Function getNewChatId
 function getNewChatId(type) {
@@ -150,6 +76,10 @@ function getChats() {
   return chats;
 }
 
+function setChats(newChats) {
+  chats = newChats;
+}
+
 function setSeen(obj) {
   for (let chat of chats) {
     if(chat.id === obj.chatId) {
@@ -166,5 +96,6 @@ module.exports = {
   getChat,
   getChatsContent,
   getChats,
-  setSeen
+  setSeen,
+  setChats,
 }

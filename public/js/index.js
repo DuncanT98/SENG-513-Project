@@ -38,7 +38,6 @@ sectionSignIn.addEventListener('submit', function(e) {
       }
     }
   }
-
   // User does not exist
   if (!valid) {
     alert("Invalid Username or Password.")
