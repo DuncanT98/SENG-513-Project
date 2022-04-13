@@ -2,14 +2,14 @@
 
 Github Reposiotry link: https://github.com/DuncanT98/SENG-513-Project
 
-Instructions to run:
+**Instructions to run:**
 - Navigate to the root directory where the file 'server.js' is located
   - Note: 'credentials.txt' file needs to be in the same folder as 'server.js'
 - In the terminal/command prompt, run 'npm install' to install all dependencies
 - Run "npm start" to run the server
 - Open browser to url: "localhost:3000" to start 
 
-Project Details:
+**Project Details:**
 - After starting the program in browser, user may log in with existing user information or sign up and create a username and account
 - User may sign in with an account after signing up as user information is stored in the database set up  through MongoDB
 - Once logged in, user has access to history of conversations and may view messages as messages are also stored in the database
@@ -25,8 +25,8 @@ Project Details:
 - Settings page is implemented where users can change username and change password, which will update the users' info in the database as well
 - Sign out option is available which users can use which will direct a user back to the Log In/Sign Up page where a user may sign up with a different account or log in to an existing account using user credentials
 
-Files 
-- 'server.js'   Contains the Express server and Socket.io
+**Files** 
+- 'server.js'               Contains the Express server, MongoDB and Socket.io
 - 'utils/chats.js'          Contains functions for manipulating chats.
 - 'utils/users.js'          Contains functions for manipulating users.
 - 'public/util/main.js'     Contains the logic for the main page.
