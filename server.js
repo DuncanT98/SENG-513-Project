@@ -14,7 +14,7 @@ let databasePassword = credentials[1];
 let databaseHostname = credentials[2];
 let databaseOptions = credentials[3];
 const uri = `mongodb+srv://${databaseUsername}:${databasePassword}@${databaseHostname}${databaseOptions}`;
-console.log(uri);
+//console.log(uri);
 // Create a new MongoClient
 const client = new mongodb.MongoClient(uri);
 const PORT = 3000 || process.env.PORT;
@@ -31,7 +31,7 @@ const { addUser, addChatToUser, getUsers, getUserIds, removeGroupFromUser,
   getUserChatIds, getUserInfo, getUsersAndStatus, setStatus,
   setUsername, setPassword, setUsers } = require('./utils/users.js');
 const { getNewChatId, addChat, getChat, addMsg,
-  getChatsContent, getChats, setSeen, setChats, addToMute,  leaveGroup } = require('./utils/chats.js');
+  getChatsContent, getChats, setSeen, setChats, addToMute, leaveGroup } = require('./utils/chats.js');
 
 // Server
 const app = express();
@@ -46,7 +46,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 let serverStarted = false;
 // Run when client connects
 
-io.on('connection', socket => { 
+io.on('connection', socket => {
   // Create the database
   const db = client.db("chat-app");
   const bucket = new mongodb.GridFSBucket(db);
@@ -63,13 +63,13 @@ io.on('connection', socket => {
       const doc = { _id: "chatInfo", chats: getChats() };
       let x = await db.collection("chats").insertOne(doc);
     }
-      console.log(getChats());
-      const filter = { _id: "chatInfo"}
-      const replace = {chats: getChats() };
-      const result = await db.collection("chats").replaceOne(filter,replace);
-    console.log(
+    //console.log(getChats());
+    const filter = { _id: "chatInfo" }
+    const replace = { chats: getChats() };
+    const result = await db.collection("chats").replaceOne(filter, replace);
+    /*console.log(
       `The chats were inserted with the _id: ${result}`,
-    );
+    );*/
   }
 
   async function saveUsersToDatabase() {
@@ -80,28 +80,29 @@ io.on('connection', socket => {
       const doc = { _id: "userInfo", users: getUsers() };
       await db.collection("users").insertOne(doc);
     }
+  }
 
-      /**
-   * Saves the array of user to the database. If the user array is already in the
-   * database it will replace with the new version, if its not stored yet it will
-   * insert it.
-   */
-    async function saveUsersToDatabase() {
-      // if users are not in database, initialize empty list
-      const query = { _id: "userInfo" };
-      let searchResult = await db.collection("users").findOne(query);
-      if (searchResult == null) {
-        const doc = { _id: "userInfo", users: getUsers() };
-        await db.collection("users").insertOne(doc);
-      }
-      const filter = { _id: "userInfo"}
-      const replace = {users: getUsers() };
-      const result = await db.collection("users").replaceOne(filter,replace);
-      console.log(
-        `The users were inserted with the _id: ${result}`,
-      );
-      }
-  
+  /**
+* Saves the array of user to the database. If the user array is already in the
+* database it will replace with the new version, if its not stored yet it will
+* insert it.
+*/
+  async function saveUsersToDatabase() {
+    // if users are not in database, initialize empty list
+    const query = { _id: "userInfo" };
+    let searchResult = await db.collection("users").findOne(query);
+    if (searchResult == null) {
+      const doc = { _id: "userInfo", users: getUsers() };
+      await db.collection("users").insertOne(doc);
+    }
+    const filter = { _id: "userInfo" }
+    const replace = { users: getUsers() };
+    const result = await db.collection("users").replaceOne(filter, replace);
+    /*console.log(
+      `The users were inserted with the _id: ${result}`,
+    );*/
+  }
+
   /**
    * Retrieves chats to the database and sets the value of chats with the result. If
    * the result is null then chats is initialized to an empty array
@@ -115,47 +116,48 @@ io.on('connection', socket => {
     } else {
       newChats = result["chats"];
     }
-    console.log(newChats);
+    //console.log(newChats);
     setChats(newChats);
   }
 
   async function getUsersFromDatabase() {
     const query = { _id: "userInfo" };
     const result = await db.collection("users").findOne(query);
-    console.log(result);
+    //console.log(result);
     let newUsers;
     if (result == null) {
       newUsers = [];
     } else {
       newUsers = result["users"];
     }
+  }
 
-  
+
   /**
    * Retrieves users to the database and sets the value of user with the result. If
    * the result is null then users is initialized to an empty array
    */
-    async function getUsersFromDatabase() {
-      const query = { _id: "userInfo" };
-      const result = await db.collection("users").findOne(query);
-      console.log(result);
-      let newUsers;
-      if (result == null) {
-        newUsers = [];
-      } else {
-        newUsers = result["users"];
-      }
-      setUsers(newUsers);
-      }
-      // Only retrieve chats from database on first connection after the server starts
-      if (!serverStarted) {
-        serverStarted = true;
-        getChatsFromDatabase();
-        getUsersFromDatabase();
-      }
-      saveUsersToDatabase();
-      saveChatsToDatabase();
-  
+  async function getUsersFromDatabase() {
+    const query = { _id: "userInfo" };
+    const result = await db.collection("users").findOne(query);
+    //console.log(result);
+    let newUsers;
+    if (result == null) {
+      newUsers = [];
+    } else {
+      newUsers = result["users"];
+    }
+    setUsers(newUsers);
+  }
+  // Only retrieve chats from database on first connection after the server starts
+  if (!serverStarted) {
+    serverStarted = true;
+    getChatsFromDatabase();
+    getUsersFromDatabase();
+  }
+  saveUsersToDatabase();
+  saveChatsToDatabase();
+
   // Emit 'usersObject', send users
   const users = getUsers();
   socket.emit('usersObject', users)
@@ -201,7 +203,7 @@ io.on('connection', socket => {
       seen: [newChatInfo.fromUser],
       showNotification: true,
       messages: [],
-      mute : []
+      mute: []
     };
     addChat(newChat);
     saveChatsToDatabase();
@@ -242,7 +244,7 @@ io.on('connection', socket => {
       seen: [obj.selected[obj.selected.length - 1]],
       showNotification: true,
       messages: [],
-      mute : []
+      mute: []
     };
     addChat(newChat);
     saveChatsToDatabase();
@@ -281,7 +283,7 @@ io.on('connection', socket => {
 
   // Receive 'sendMessage'
   socket.on('sendMessage', function (obj) {
-    let updatedChat = addMsg(obj); 
+    let updatedChat = addMsg(obj);
     saveUsersToDatabase();
     saveChatsToDatabase();           // add message to chat
     io.emit('newMessage', updatedChat);       // emit chat //TODO: fix
@@ -345,7 +347,7 @@ io.on('connection', socket => {
       }
     }
     saveUsersToDatabase();
-    saveChatsToDatabase();  
+    saveChatsToDatabase();
   })
 
   // Receive 'sendMessage'
