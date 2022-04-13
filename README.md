@@ -16,10 +16,11 @@ Project Details:
 - User also has access to any other user who has been added before
 - User may search for another user through a drop-down menu which has been implemented to assist users
 - Users can add each other and message one another after adding a user through the search bar
-- A user is notified when they are added by a new user
-- After adding a user, a user may mute notifications from a specific user if wanted
+- A user is notified when they are added by a new user and also when they are added to a group
+- After adding a user, a user may mute notifications from a specific user if wanted or mute notifications from a group
 - User can create group chats and select other users to add to the group chat 
 - All members of the group chat may message each other in the group
+- Users can see all participants of a group
 - Users may also share files (limited to text files) with another, this has been implemented using GridFs to store the file and share it
 - Settings page is implemented where users can change username and change password, which will update the users' info in the database as well
 - Sign out option is available which users can use which will direct a user back to the Log In/Sign Up page where a user may sign up with a different account or log in to an existing account using user credentials
