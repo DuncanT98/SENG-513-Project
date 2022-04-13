@@ -108,6 +108,26 @@ function setStatus(obj) {
   }
 }
 
+function removeGroupFromUser(obj) {
+  for (let user of users) {
+    if (user.id === obj.userId) {
+      let chats = user.chats;
+      for (let k=0; k<chats.length; k++) {
+        console.log('------------------------------------------------116')
+        let chatId = chats[k]
+        console.log(chatId)
+        console.log(obj.chatId)
+        if (chatId === obj.chatId) {
+          console.log('--------------------------114')
+          user.chats.splice(k, 1)
+          console.log('--------------------------119')
+        }
+        break;
+      }
+    }
+  }
+}
+
 // export 
 module.exports = {
   addUser,
@@ -120,5 +140,6 @@ module.exports = {
   setUsername,
   setPassword,
   setStatus,
-  setUsers
+  setUsers,
+  removeGroupFromUser
 }
