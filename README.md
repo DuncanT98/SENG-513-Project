@@ -1,5 +1,7 @@
 # SENG-513-Project
 
+Github Reposiotry link: https://github.com/DuncanT98/SENG-513-Project
+
 Instructions to run:
 - Run 'npm install' to install all dependencies on terminal/command prompt
 - Run "npm run dev" to run server
