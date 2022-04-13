@@ -1,3 +1,4 @@
+// socket.io
 const socket = io();
 
 // Get DOM element
