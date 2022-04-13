@@ -4,6 +4,9 @@ const stream = require("stream");
 const mongodb = require("mongodb");
 var fs = require('fs');
 
+/**
+ * Load credentials from file to create uri string for mongodb database
+ */
 let credentials = fs.readFileSync("./credentials.txt", "utf-8");
 credentials = credentials.split("\n")
 let databaseUsername = credentials[0];
@@ -43,10 +46,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 let serverStarted = false;
 // Run when client connects
 io.on('connection', socket => {  
-
-  const db = client.db("ChatApp");
+  // Create the database
+  const db = client.db("chat-app");
   const bucket = new mongodb.GridFSBucket(db);
-  
+  /**
+   * Saves the array of chats to the database. If the chats array is already in the
+   * database it will replace with the new version, if its not stored yet it will
+   * insert it.
+   */
   async function saveChatsToDatabase() {
       // if chats are not in database, initialize empty list
     const query = { _id: "chatInfo" };
@@ -54,9 +61,7 @@ io.on('connection', socket => {
     if (searchResult == null) {
       const doc = { _id: "chatInfo", chats: getChats() };
       let x = await db.collection("chats").insertOne(doc);
-      console.log(x.insertedId);
     }
-      console.log("HERE");
       console.log(getChats());
       const filter = { _id: "chatInfo"}
       const replace = {chats: getChats() };
@@ -65,7 +70,11 @@ io.on('connection', socket => {
       `The chats were inserted with the _id: ${result}`,
     );
     }
-    
+      /**
+   * Saves the array of user to the database. If the user array is already in the
+   * database it will replace with the new version, if its not stored yet it will
+   * insert it.
+   */
     async function saveUsersToDatabase() {
       // if users are not in database, initialize empty list
       const query = { _id: "userInfo" };
@@ -82,6 +91,10 @@ io.on('connection', socket => {
       );
       }
   
+  /**
+   * Retrieves chats to the database and sets the value of chats with the result. If
+   * the result is null then chats is initialized to an empty array
+   */
   async function getChatsFromDatabase() {
     const query = { _id: "chatInfo" };
     const result = await db.collection("chats").findOne(query);
@@ -95,6 +108,10 @@ io.on('connection', socket => {
     setChats(newChats);
     }
   
+  /**
+   * Retrieves users to the database and sets the value of user with the result. If
+   * the result is null then users is initialized to an empty array
+   */
     async function getUsersFromDatabase() {
       const query = { _id: "userInfo" };
       const result = await db.collection("users").findOne(query);
@@ -107,7 +124,7 @@ io.on('connection', socket => {
       }
       setUsers(newUsers);
       }
-  
+      // Only retrieve chats from database on first connection after the server starts
       if (!serverStarted) {
         serverStarted = true;
         getChatsFromDatabase();
@@ -136,6 +153,8 @@ io.on('connection', socket => {
   // Receive 'newSignUp'
   socket.on('newSignUp', function(user) {
     addUser(user);
+    saveUsersToDatabase();
+    saveChatsToDatabase();
     io.emit('newSignUp', user);
   }) 
 
@@ -170,18 +189,13 @@ io.on('connection', socket => {
       toUser : newChatInfo.toUser,
       newChat : newChat,
     }
+    saveUsersToDatabase();
+    saveChatsToDatabase();
     io.emit('newIndiChat', info);
-
-    // Send updated chats list TODO: fix
-    /*let userChatIds = getUserChatIds(newChatInfo.fromUser);
-    let userChatsContent = getChatsContent(userChatIds);
-    socket.emit('getChats', userChatsContent);*/
   }) 
 
   // Receive 'newGroup'
   socket.on('newGroup', function(obj) {
-    //console.log('--------------86')
-    //console.log(obj)
     // create new id
     let newGroupChatId = getNewChatId('Group');
 
@@ -206,6 +220,8 @@ io.on('connection', socket => {
       selected : obj.selected,
       newChat : newChat,
     }
+    saveUsersToDatabase();
+    saveChatsToDatabase();
     io.emit('newGroupChat', info);
   })
 
@@ -225,7 +241,9 @@ io.on('connection', socket => {
 
   // Receive 'sendMessage'
   socket.on('sendMessage', function (obj) {
-    let updatedChat = addMsg(obj);            // add message to chat
+    let updatedChat = addMsg(obj); 
+    saveUsersToDatabase();
+    saveChatsToDatabase();           // add message to chat
     io.emit('newMessage', updatedChat);       // emit chat //TODO: fix
   })
 
@@ -261,6 +279,8 @@ io.on('connection', socket => {
         break;
       }
     }
+    saveUsersToDatabase();
+    saveChatsToDatabase();  
   })
 
     // Receive 'sendMessage'
@@ -275,12 +295,6 @@ io.on('connection', socket => {
         senderId: obj.msg.senderId,
         content: `file(${insertedId})${contentOfObj.fileName}`
       }
-      // addMsg(obj);    
-      // let chatId = obj.currentChat;           
-      // let chatContent = getChat(chatId);      // get updated chat
-      // let chats = getChats();
-      // io.emit('newMessage', chatContent);     // emit updated chat 
-      // io.emit('chats', chats);
     let updatedChat = addMsg(obj);            // add message to chat
     io.emit('newMessage', updatedChat);
     })
@@ -299,4 +313,3 @@ io.on('connection', socket => {
 
 // Server
 const PORT = 3000 || process.env.PORT;
-// server.listen(PORT, () => console.log(`Server running on port ${PORT}...`));
