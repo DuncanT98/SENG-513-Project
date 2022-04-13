@@ -1,7 +1,10 @@
 # SENG-513-Project: Instant Messaging Web Application
 
+Github Reposiotry link: https://github.com/DuncanT98/SENG-513-Project
+
 Instructions to run:
 - Navigate to the root directory where the file 'server.js' is located
+- - Note: credentials file needs to be in the same folder as 'server.js'
 - In the terminal/command prompt, run 'npm install' to install all dependencies
 - Run "npm start" to run the server
 - Open browser to url: "localhost:3000" to start 
