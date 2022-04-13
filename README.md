@@ -16,6 +16,7 @@ Project Details:
 - User also has access to any other user who has been added before
 - User may search for another user through a drop-down menu which has been implemented to assist users
 - Users can add each other and message one another after adding a user through the search bar
+- After adding a user, a user may mute notifications from a specific user if wanted
 - User can create group chats and select other users to add to the group chat 
 - All members of the group chat may message each other in the group
 - Users may also share files (limited to text files) with another, this has been implemented using GridFs to store the file and share it
