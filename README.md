@@ -27,11 +27,11 @@ Project Details:
 
 Files 
 - 'server.js'   Contains the Express server and Socket.io
+- 'utils/chats.js'          Contains functions for manipulating chats.
+- 'utils/users.js'          Contains functions for manipulating users.
 - 'public/util/main.js'     Contains the logic for the main page.
 - 'public/util/index.js'    Contains the logic for the sign in page.
 - 'public/util/signUp.js'   Contains the logic for the sign up page.
-- 'utis/chats'              Contains functions for manipulating chats.
-- 'utis/userss'             Contains functions for manipulating users.
 
 Thank you, 
 Group 12
