@@ -16,6 +16,7 @@ Project Details:
 - User may search for a another user through a drop down menu which has been implemnted to assist users
 - Users can add each other and message one another after adding a user through the search bar
 - User can create group chats with other users that are selected by the user who has created the group chat and all memebers of the group chat may message each other in the group
+- User can also leave a group
 - Users may also share files(limited to text files) with another, this has been implemented using GridFs to store the file and share it
 - Settings page is implemented where users can change username and change password which will update the users info in the databse as well
 - Sign out option is avaliable which users can use which will direct a user back to the Log In/Sign Up page where a user may sign up with a different account or log in to an existing account using user credentials
