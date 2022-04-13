@@ -3,6 +3,7 @@
 Github Reposiotry link: https://github.com/DuncanT98/SENG-513-Project
 
 Instructions to run:
+- Note: credentials file needs to be in the same folder as server.js 
 - Run 'npm install' to install all dependencies on terminal/command prompt
 - Run "npm run dev" to run server
 - Open browser to url: "localhost:3000" to start 
