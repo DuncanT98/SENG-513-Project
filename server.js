@@ -1,6 +1,5 @@
-//MongoDB needed for GridFS, check with Duncan
+// MongoDB needed for GridFS
 const stream = require("stream");
-
 const mongodb = require("mongodb");
 var fs = require('fs');
 
@@ -15,14 +14,15 @@ let databaseHostname = credentials[2];
 let databaseOptions = credentials[3];
 const uri = `mongodb+srv://${databaseUsername}:${databasePassword}@${databaseHostname}${databaseOptions}`;
 //console.log(uri);
+
 // Create a new MongoClient
 const client = new mongodb.MongoClient(uri);
 const PORT = 3000 || process.env.PORT;
-client.connect().then((result) => server.listen(PORT, () => console.log(`Server running on port ${PORT}...`))).catch((err) => console.log(err))
+client.connect()
+  .then((result) => server.listen(PORT, () => console.log(`Server running on port ${PORT}...`)))
+  .catch((err) => console.log(err))
 
-// /****************************************************** */
-
-
+/****************************************************** */
 const path = require('path');
 const http = require('http');
 const express = require('express');   // npm run dev
@@ -38,18 +38,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-// cosnt
+// Store users and socket ids
 let usersAndSockets = []
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 let serverStarted = false;
-// Run when client connects
 
+// Run when client connects
 io.on('connection', socket => {
+
   // Create the database
   const db = client.db("chat-app");
   const bucket = new mongodb.GridFSBucket(db);
+
   /**
    * Saves the array of chats to the database. If the chats array is already in the
    * database it will replace with the new version, if its not stored yet it will
@@ -63,6 +65,7 @@ io.on('connection', socket => {
       const doc = { _id: "chatInfo", chats: getChats() };
       let x = await db.collection("chats").insertOne(doc);
     }
+
     //console.log(getChats());
     const filter = { _id: "chatInfo" }
     const replace = { chats: getChats() };
@@ -83,10 +86,10 @@ io.on('connection', socket => {
   }
 
   /**
-* Saves the array of user to the database. If the user array is already in the
-* database it will replace with the new version, if its not stored yet it will
-* insert it.
-*/
+  * Saves the array of user to the database. If the user array is already in the
+  * database it will replace with the new version, if its not stored yet it will
+  * insert it.
+  */
   async function saveUsersToDatabase() {
     // if users are not in database, initialize empty list
     const query = { _id: "userInfo" };
@@ -120,6 +123,9 @@ io.on('connection', socket => {
     setChats(newChats);
   }
 
+  /**
+   * Get user from the MongoDb database
+   */
   async function getUsersFromDatabase() {
     const query = { _id: "userInfo" };
     const result = await db.collection("users").findOne(query);
@@ -149,14 +155,15 @@ io.on('connection', socket => {
     }
     setUsers(newUsers);
   }
+
   // Only retrieve chats from database on first connection after the server starts
   if (!serverStarted) {
     serverStarted = true;
-    getChatsFromDatabase();
-    getUsersFromDatabase();
+    getChatsFromDatabase();   // update chats
+    getUsersFromDatabase();   // update users 
   }
-  saveUsersToDatabase();
-  saveChatsToDatabase();
+  saveUsersToDatabase();    // update users
+  saveChatsToDatabase();    // update chats 
 
   // Emit 'usersObject', send users
   const users = getUsers();
@@ -166,7 +173,7 @@ io.on('connection', socket => {
   const userIds = getUserIds();
   socket.emit('userIdsObject', userIds)
 
-  // Receive 'setStatus'
+  // Receive 'setStatus', change the status of a user
   socket.on('setStatus', function (obj) {
     let userId1 = obj.id;
     let status1 = obj.status;
@@ -175,7 +182,8 @@ io.on('connection', socket => {
     io.emit('statusChange', { userId: userId1, status: status1 });
   })
 
-  // Receive 'newSignUp'
+  // Receive 'newSignUp', a new user has signed up. 
+  // add the user to the list and database
   socket.on('newSignUp', function (user) {
     addUser(user);
     saveUsersToDatabase();
@@ -183,7 +191,7 @@ io.on('connection', socket => {
     io.emit('newSignUp', user);
   })
 
-  // Receive 'getUserInfo'
+  // Receive 'getUserInfo', request for user infor
   socket.on('getUserInfo', function (userId) {
     saveUsersToDatabase()
     saveChatsToDatabase()
@@ -205,6 +213,8 @@ io.on('connection', socket => {
       messages: [],
       mute: []
     };
+
+    // update chat
     addChat(newChat);
     saveChatsToDatabase();
 
@@ -213,7 +223,7 @@ io.on('connection', socket => {
     addChatToUser(newChatInfo.toUser, newIndiChatId);
 
     // notify new user
-    let info = {    //TODO: change fromUser to fromUserId
+    let info = {    
       fromUser: newChatInfo.fromUser,
       toUser: newChatInfo.toUser,
       newChat: newChat,
@@ -221,18 +231,10 @@ io.on('connection', socket => {
     saveUsersToDatabase();
     saveChatsToDatabase();
     io.emit('newIndiChat', info);
-
-    // Send updated chats list TODO: fix
-    /*let userChatIds = getUserChatIds(newChatInfo.fromUser);
-    let userChatsContent = getChatsContent(userChatIds);
-    socket.emit('getChats', userChatsContent);*/
   })
 
   // Receive 'newGroup'
   socket.on('newGroup', function (obj) {
-    //console.log('--------------86')
-    //console.log(obj)
-
     // create new id
     let newGroupChatId = getNewChatId('Group');
 
@@ -246,6 +248,8 @@ io.on('connection', socket => {
       messages: [],
       mute: []
     };
+
+    // update chat
     addChat(newChat);
     saveChatsToDatabase();
 
@@ -259,18 +263,20 @@ io.on('connection', socket => {
       selected: obj.selected,
       newChat: newChat,
     }
+
+    // update database
     saveUsersToDatabase();
     saveChatsToDatabase();
     io.emit('newGroupChat', info);
   })
 
-  // Receive 'loadChat' //TODO: check this
+  // Receive 'loadChat', load chat log
   socket.on('loadChat', function ({ userId, chatId }) {
     let chat = getChat(chatId);
     socket.emit('chatObject', chat);
   })
 
-  // Receive 'getChats'
+  // Receive 'getChats', request chats 
   socket.on('getChats', function (obj) {
     let userId = obj.userId
     let userChatIds = getUserChatIds(userId);
@@ -281,12 +287,12 @@ io.on('connection', socket => {
     socket.emit('getChats', userChatsContent);
   })
 
-  // Receive 'sendMessage'
+  // Receive 'sendMessage', new message was sent
   socket.on('sendMessage', function (obj) {
     let updatedChat = addMsg(obj);
     saveUsersToDatabase();
-    saveChatsToDatabase();           // add message to chat
-    io.emit('newMessage', updatedChat);       // emit chat //TODO: fix
+    saveChatsToDatabase();                  // add message to chat
+    io.emit('newMessage', updatedChat);     // emit chat 
   })
 
   // Receive 'changeName'
@@ -314,12 +320,13 @@ io.on('connection', socket => {
     saveChatsToDatabase();
   })
 
-  // Chat 
+  // Chat, mute chat 
   socket.on('addToMute', function (obj) {
     addToMute(obj);
     saveChatsToDatabase();
   })
 
+  // Leave group
   socket.on('leaveGroup', function (obj) {
     leaveGroup(obj);
     removeGroupFromUser(obj)
@@ -335,7 +342,7 @@ io.on('connection', socket => {
 
   })
 
-  // disconnet
+  // disconnet, user has disconnected 
   socket.on('disconnect', function () {
     for (let i = 0; i < usersAndSockets.length; i++) {
       let item = usersAndSockets[i]
@@ -346,6 +353,8 @@ io.on('connection', socket => {
         break;
       }
     }
+
+    // update database
     saveUsersToDatabase();
     saveChatsToDatabase();
   })
@@ -362,16 +371,13 @@ io.on('connection', socket => {
       senderId: obj.msg.senderId,
       content: `file(${insertedId})${contentOfObj.fileName}`
     }
-    // addMsg(obj);    
-    // let chatId = obj.currentChat;           
-    // let chatContent = getChat(chatId);      // get updated chat
-    // let chats = getChats();
-    // io.emit('newMessage', chatContent);     // emit updated chat 
-    // io.emit('chats', chats);
+    
+    // update chat 
     let updatedChat = addMsg(obj);            // add message to chat
     io.emit('newMessage', updatedChat);
   })
 
+  // Receive 'getFile', user sent a file
   socket.on("getFile", function (fileName, fileId) {
     let filestream = bucket.openDownloadStream(mongodb.ObjectId(fileId)).pipe(fs.createWriteStream('./outputFile'));
     filestream.on('finish', async () => {
@@ -383,8 +389,3 @@ io.on('connection', socket => {
   });
 
 })
-
-// Server
-//const PORT = 3000 || process.env.PORT;
-// server.listen(PORT, () => console.log(`Server running on port ${PORT}...`));
-

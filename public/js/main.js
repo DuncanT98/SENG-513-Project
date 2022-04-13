@@ -17,8 +17,8 @@ let user = ''
 socket.emit('getUserInfo', userId);                   // Tell server to send user info
 socket.on('getUserInfo', function(userInfo) {         // Get user info from server
   user = userInfo;                // set user
-  console.log("user info: ")
-  console.log(user);
+  //console.log("user info: ")
+  //console.log(user);
 
   // set username
   pUserNameH.innerHTML = user.username
@@ -29,8 +29,6 @@ socket.on('getUserInfo', function(userInfo) {         // Get user info from serv
 socket.emit('setStatus', {id:userId, status:'online'} )
 socket.on('statusChange', function(array) {
   //TODO:
-  //console.log('-------------------------33 status change')
-  //console.log(array)
 })
 
 // Declare variables
@@ -48,8 +46,8 @@ socket.emit('getChats', {userId : userId});
 
 // Receive 'getChats', get chats from server
 socket.on('getChats', function(userChatsContent) {
-  console.log(`Chats for ${userId}:`)   
-  console.log(userChatsContent)
+  //console.log(`Chats for ${userId}:`)   
+  //console.log(userChatsContent)
   chats = []
   for (let chat of userChatsContent) {
     // place unseen chats at the top of the list
@@ -64,9 +62,7 @@ socket.on('getChats', function(userChatsContent) {
 
 //  New sign up, get a new signup from the server 
 socket.on('newSignUp', function(user) {
-  console.log('-------------------------------new sign up ')
   users.push(user);
-  console.log(users)
 })
 
 // Enter Command, before this was "Search Chats"
@@ -130,7 +126,7 @@ $("#searchChats").on("change", function (event) {
     for (let i=0; i<chatsToDisplay.length; i++) {
       let chatDisplay = chatsToDisplay[i];
       let chatId = chatIdsToDisplay[i];
-      console.log(chatId);
+      //console.log(chatId);
       optionString = `<option data-type="chat" data-cid="${chatId}">${chatDisplay}</option>`;
       options.append(optionString);
     }
@@ -187,7 +183,7 @@ function loadChatsDiv() {
   ulChatList.innerHTML = ''        // clear chat list
 
   // Display chats 
-  for (let j=0; j<chats.length; j++) {    //TODO: why does i not work 
+  for (let j=0; j<chats.length; j++) {   
     let chat = chats[j]
     
     // create li
@@ -197,10 +193,8 @@ function loadChatsDiv() {
     if (li.id === currentChatId) {
       liClass = "chat-list-item list-group-item list-group-item-action active"
       if (chat.name === 'Indi') {
-        console.log('--------------------201')
         pChatName.innerHTML = getUsername(chat.members.filter(userId1 => userId1 !== userId)[0])
       } else {
-        console.log('--------------------203')
         pChatName.innerHTML = chat.name
       }
     } else {
@@ -242,7 +236,7 @@ function loadChatsDiv() {
     
     // notOnline icon
     span2.id = 'notOnline'
-    span2.classList = 'material-icons-outlined'   //TODO: add hidden?
+    span2.classList = 'material-icons-outlined'  
     span2.innerHTML = 'circle'
     const span3 = document.createElement('span');   
     
@@ -267,7 +261,7 @@ function loadChatsDiv() {
 
     // Check if chat was seen
     if (!chat.seen.includes(userId) && !chat.mute.includes(userId)) {
-      div.appendChild(span1)          // newMessageIcon     //TODO: fix?
+      div.appendChild(span1)          // newMessageIcon    
     } else {
       span2.classList.add('ml-auto');  // ofline
       span3.classList.add('ml-auto')   // online
@@ -302,13 +296,13 @@ function getUsername(userId) {
  * @param {event} e 
  */ 
 function chatSelected(e) {
-  console.log(e);
+  //console.log(e);
   $("#chatHistorySide").removeClass("d-none");
   // Switch active class to currently clicked element
   $('#chatList .active').removeClass('active');
   $(this).toggleClass("active");
   let id = $(this).attr("id");
-  console.log(`------------------------selected: ${id}`);
+  //console.log(`------------------------selected: ${id}`);
   if (stringContainsNumber(id)) {
     currentChatId = id;
     loadChatsDiv();
@@ -333,7 +327,7 @@ function loadChatLog() {
     }
   }
 
-  //TODO: comment
+  // Get chat infromation
   for(let i=0; i<chats.length; i++) {
     let chat = chats[i]
     if (chat.id === currentChatId) {
@@ -445,23 +439,18 @@ $("#sendMsg").on("click", function (event) {
 // Receive 'newMessage'
 socket.on('newMessage', function(updatedChat) {
   // update chats
-  for (let i=0; i<chats.length; i++) {      // TODO: better way?
+  for (let i=0; i<chats.length; i++) {      
     let chat = chats[i];
     if (chat.id === updatedChat.id) {
-      console.log('------------------------received:')
-      console.log(chat);
       chats.splice(i, 1);
       if(chat.id === currentChatId) {
         //chat.showNotification = false;
         chat.seen.push(userId);
         socket.emit('seen', {userId:userId, chatId:currentChatId})
       }
-      console.log('------------------------received1:')
       if (!updatedChat.mute.includes(userId)){
-        console.log('------------------------received21:')
         chats.unshift(updatedChat); 
       } else {
-        console.log('------------------------received222:')
         chats.splice(i, 0, updatedChat)
       }
       loadChatsDiv();
@@ -494,7 +483,7 @@ $("#goToGroupSettingsButton").on("click", function (event) {
   // set select users
   selectUsers.innerHTML = '';
 
-  // TODO: currently, you can create multiple groups with the same users
+  // Create group
   for (let user of users) {
     if (user.id !== userId) {
       let option = document.createElement('option');
@@ -522,7 +511,7 @@ $("#goToSettingsButton").on("click", function (event) {
  */
 $("#leftSideBarContainer .back-arrow").on("click", function (event) {
   event.preventDefault();
-  console.log("WHAAATTT");
+  //console.log("WHAAATTT");
   $("#userSettingsSidebar").addClass("d-none");
   $("#groupSettingsSidebar").addClass("d-none");
   $("#userChatListSidebar").removeClass("d-none");
@@ -534,7 +523,6 @@ $("#leftSideBarContainer .back-arrow").on("click", function (event) {
 $("#goToSignOutButton").on("click", function (event) {
   event.preventDefault();
   window.location.href = 'index.html';
-  //TODO: Actually sign out user!
 });
 
 /**
@@ -550,7 +538,7 @@ $("#chatHistorySide .back-arrow").on("click", function (event) {
 });
 
 /**
- * In Settings, clicking 'Change Username" will open a modal TODO:
+ * In Settings, clicking 'Change Username" will open a modal
  */
  $("#btnChangeUsername").on("click", function (event) {
   event.preventDefault();
@@ -558,8 +546,6 @@ $("#chatHistorySide .back-arrow").on("click", function (event) {
   const input = prompt("Enter new username:");
   socket.emit('changeUsername', {userId: userId, newUsername:input});
   alert('Username changed.');
-  //TODO: reload chat with new username
-  //TODO: check username is unique
 });
 
 // Change password
@@ -604,9 +590,9 @@ $("#btnChangePassword").on("click", function (event) {
   
   // emit new group
   if (good) {
-    console.log(`---------------------------created new group '${groupSubject}' with:`)
+    //console.log(`---------------------------created new group '${groupSubject}' with:`)
     selected.push(userId)
-    console.log(selected)
+    //console.log(selected)
     alert(`Created new group '${groupSubject}`)
     socket.emit('newGroup', {selected : selected, name:groupSubject})
     inputGroupName.value = '';
@@ -619,15 +605,15 @@ $("#btnChangePassword").on("click", function (event) {
 socket.on('newGroupChat', function(info) {
   if (info.selected.includes(userId)) {
     chats.unshift(info.newChat);
-    console.log('----------------------511')
-    console.log(chats)
+    //console.log('----------------------511')
+    //console.log(chats)
     loadChatsDiv();
   }
 })
 
 // view members
 $("#btnViewMembers").on("click", function (event) {
-  console.log('-------------------view members selected')
+  //console.log('-------------------view members selected')
   let members = []
   event.preventDefault();
   for (let chat of chats) {
@@ -681,13 +667,13 @@ $("#btnLeaveGroup").on('click', function(event) {
   event.preventDefault();
   alert(`You have left the group ${pChatName.innerHTML}`)
   socket.emit('leaveGroup', {userId:userId, chatId:currentChatId})
-  console.log('--------------------6851')
+  //console.log('--------------------6851')
   for (let i=0; i<chats.length; i++) {
     let chat = chats[i];
     if (chat.id === currentChatId) {
-      console.log('--------------------6852')
+      //console.log('--------------------6852')
       let members = chat.members
-      console.log(members)
+      //console.log(members)
       for (let j=0; j<members.length; j++) {
         let member = members[j]
         if (member === userId) {

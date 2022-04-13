@@ -25,5 +25,13 @@ Project Details:
 - Settings page is implemented where users can change username and change password, which will update the users' info in the database as well
 - Sign out option is available which users can use which will direct a user back to the Log In/Sign Up page where a user may sign up with a different account or log in to an existing account using user credentials
 
+Files 
+- 'server.js'   Contains the Express server and Socket.io
+- 'public/util/main.js'     Contains the logic for the main page.
+- 'public/util/index.js'    Contains the logic for the sign in page.
+- 'public/util/signUp.js'   Contains the logic for the sign up page.
+- 'utis/chats'              Contains functions for manipulating chats.
+- 'utis/userss'             Contains functions for manipulating users.
+
 Thank you, 
 Group 12

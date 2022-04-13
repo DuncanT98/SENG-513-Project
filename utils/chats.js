@@ -1,4 +1,4 @@
-let chats = [];
+let chats = [];   // store chats 
 
 // Function getNewChatId
 function getNewChatId(type) {
@@ -10,7 +10,7 @@ function getNewChatId(type) {
       if (id > maxChat) {
         maxChat = id
       }
-    } else if (type === 'Group' && chat.name !== 'Indi') {    //TODO:check condition will not break
+    } else if (type === 'Group' && chat.name !== 'Indi') {   
       let id = parseInt(chat.id.substring(1));
       if (id > maxChat) {
         maxChat = id
@@ -50,7 +50,6 @@ function addMsg(obj) {
 function getChat(chatId) {
   for (let i=0; i<chats.length; i++) {
     let chat = chats[i];
-    //console.log('---------------------116 check')
     if (chat.id === chatId) {
       return chat;
     }
@@ -72,14 +71,17 @@ function getChatsContent(chatIds) {
   return userChats;
 }
 
+// Function getChats()
 function getChats() {
   return chats;
 }
 
+// Function setChats()
 function setChats(newChats) {
   chats = newChats;
 }
 
+// Function setSeen()
 function setSeen(obj) {
   for (let chat of chats) {
     if(chat.id === obj.chatId) {
@@ -88,6 +90,7 @@ function setSeen(obj) {
   }
 }
 
+// Function addToMute()
 function addToMute(obj) {
   for (let chat of chats) {
     if (chat.id === obj.chatId) {
@@ -97,6 +100,7 @@ function addToMute(obj) {
   }
 }
 
+// Function leaveGroup()
 function leaveGroup(obj) {
   for (let i=0; i<chats.length; i++) {
     let chat = chats[i];
@@ -114,7 +118,7 @@ function leaveGroup(obj) {
   }
 }
 
-// export 
+// Export functions
 module.exports = {
   getNewChatId,
   addChat,
