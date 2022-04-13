@@ -2,7 +2,7 @@
 const divRight = document.getElementById('rightSideBar')
 const pUserNameH = document.querySelector('.userNameHome');
 const pUserNameS = document.querySelector('.userNameSettings');
-const pChatName = document.querySelector('.chatName');
+const pChatName = document.getElementById('pChatName');
 const inputSearchChats = document.getElementById('searchChats');
 const ulChatList = document.getElementById('chatList');
 const inputMsgInput = document.getElementById('msgInput');
@@ -196,6 +196,13 @@ function loadChatsDiv() {
     let liClass;
     if (li.id === currentChatId) {
       liClass = "chat-list-item list-group-item list-group-item-action active"
+      if (chat.name === 'Indi') {
+        console.log('--------------------201')
+        pChatName.innerHTML = getUsername(chat.members.filter(userId1 => userId1 !== userId)[0])
+      } else {
+        console.log('--------------------203')
+        pChatName.innerHTML = chat.name
+      }
     } else {
       liClass = "chat-list-item list-group-item list-group-item-action";
     }
@@ -259,7 +266,7 @@ function loadChatsDiv() {
     div.appendChild(p)          // name
 
     // Check if chat was seen
-    if (!chat.seen.includes(userId)) {
+    if (!chat.seen.includes(userId) && !chat.mute.includes(userId)) {
       div.appendChild(span1)          // newMessageIcon     //TODO: fix?
     } else {
       span2.classList.add('ml-auto');  // ofline
@@ -423,7 +430,6 @@ $("#sendMsg").on("click", function (event) {
   event.preventDefault();
   let msgContent = inputMsgInput.value;
   if (msgContent != '') {
-    console.log(`------------------------sent: '${msgContent}', from ${userId} to ${currentChatId}`);
     inputMsgInput.value = '';
     inputMsgInput.focus()
 
@@ -439,7 +445,7 @@ $("#sendMsg").on("click", function (event) {
 // Receive 'newMessage'
 socket.on('newMessage', function(updatedChat) {
   // update chats
-  for (i=0; i<chats.length; i++) {      // TODO: better way?
+  for (let i=0; i<chats.length; i++) {      // TODO: better way?
     let chat = chats[i];
     if (chat.id === updatedChat.id) {
       console.log('------------------------received:')
@@ -450,7 +456,14 @@ socket.on('newMessage', function(updatedChat) {
         chat.seen.push(userId);
         socket.emit('seen', {userId:userId, chatId:currentChatId})
       }
-      chats.unshift(updatedChat); 
+      console.log('------------------------received1:')
+      if (!updatedChat.mute.includes(userId)){
+        console.log('------------------------received21:')
+        chats.unshift(updatedChat); 
+      } else {
+        console.log('------------------------received222:')
+        chats.splice(i, 0, updatedChat)
+      }
       loadChatsDiv();
       break;
     }
@@ -594,6 +607,7 @@ $("#btnChangePassword").on("click", function (event) {
     console.log(`---------------------------created new group '${groupSubject}' with:`)
     selected.push(userId)
     console.log(selected)
+    alert(`Created new group '${groupSubject}`)
     socket.emit('newGroup', {selected : selected, name:groupSubject})
     inputGroupName.value = '';
   }
@@ -614,10 +628,15 @@ socket.on('newGroupChat', function(info) {
 // view members
 $("#btnViewMembers").on("click", function (event) {
   console.log('-------------------view members selected')
+  let members = []
   event.preventDefault();
   for (let chat of chats) {
     if (chat.id === currentChatId) {
-      alert(chat.members)
+      for (let member of chat.members) {
+        members.push(getUsername(member))
+      }
+      alert(members)
+      break;
     }
   }
 });
@@ -625,8 +644,15 @@ $("#btnViewMembers").on("click", function (event) {
 // mute notifucations
 $("#btnMute").on("click", function (event) {
   console.log('-------------------mute selected')
+  alert(`User ${pChatName.innerHTML} was muted.`)
   event.preventDefault();
-  //TODO:
+  socket.emit('addToMute', {userId:userId, chatId:currentChatId})
+  for (let chat of chats) {
+    if (chat.id === currentChatId) {
+      chat.mute.push(userId);
+      break;
+    }
+  }
 });
 
 /**
@@ -651,3 +677,38 @@ $("#actualUploadButton").on('change', function(event) {
 });
 
 
+$("#btnLeaveGroup").on('click', function(event) {
+  event.preventDefault();
+  alert(`You have left the group ${pChatName.innerHTML}`)
+  socket.emit('leaveGroup', {userId:userId, chatId:currentChatId})
+  console.log('--------------------6851')
+  for (let i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === currentChatId) {
+      console.log('--------------------6852')
+      let members = chat.members
+      console.log(members)
+      for (let j=0; j<members.length; j++) {
+        let member = members[j]
+        if (member === userId) {
+          chat.members.splice(j, 1)
+          //console.log('--------------------6852')
+          break
+        }
+      } 
+      break;
+    }
+  }
+
+  for (let k=0; k<user.chats.length; k++) {
+    let chatId = user.chats[k]
+    if (chatId === currentChatId) {
+      user.chats.splice(k, 1)
+    }
+  }
+
+  currentChatId = '';
+  loadChatsDiv();
+  loadChatLog();
+
+});

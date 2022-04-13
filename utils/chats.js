@@ -48,7 +48,7 @@ function addMsg(obj) {
 
 // Function getChat
 function getChat(chatId) {
-  for (i=0; i<chats.length; i++) {
+  for (let i=0; i<chats.length; i++) {
     let chat = chats[i];
     //console.log('---------------------116 check')
     if (chat.id === chatId) {
@@ -60,9 +60,9 @@ function getChat(chatId) {
 // Function getChats
 function getChatsContent(chatIds) {
   let userChats = []
-  for (index = 0; index < chats.length; index++) {
+  for (let index = 0; index < chats.length; index++) {
     let chat = chats[index];
-    for (index1 = 0; index1 < chatIds.length; index1++) {
+    for (let index1 = 0; index1 < chatIds.length; index1++) {
       let chatId = chatIds[index1];
       if (chat.id === chatId) {
         userChats.push(chat);
@@ -88,6 +88,32 @@ function setSeen(obj) {
   }
 }
 
+function addToMute(obj) {
+  for (let chat of chats) {
+    if (chat.id === obj.chatId) {
+      chat.mute.push(obj.userId)
+      break;
+    }
+  }
+}
+
+function leaveGroup(obj) {
+  for (let i=0; i<chats.length; i++) {
+    let chat = chats[i];
+    if (chat.id === obj.chatId) {
+      let members = chat.members
+      for (let j=0; j<members.length; j++) {
+        let member = members[j]
+        if (member === obj.userId) {
+          chat.members.splice(j, 1)
+          break
+        }
+      } 
+      break;
+    }
+  }
+}
+
 // export 
 module.exports = {
   getNewChatId,
@@ -98,4 +124,6 @@ module.exports = {
   getChats,
   setSeen,
   setChats,
+  addToMute,
+  leaveGroup
 }
